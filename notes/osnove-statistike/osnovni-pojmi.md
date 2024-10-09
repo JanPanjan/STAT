@@ -21,10 +21,8 @@ Kolikšen del predstavlja neka skupina enot v celoti...
 ### Primer
 
 | področje | moški | ženske | skupaj |
-| --------------- | --------------- | --------------- | --------------- |
-| NV | 119 | 112 | 231 |
-| Item1.2 | Item2.2 | Item3.2 | Item4.2 |
-| Item1.3 | Item2.3 | Item3.3 | Item4.3 |
+| -------- | ----- | ------ | ------ |
+| NV       | 119   | 112    | 231    |
 
 1. Struktura doktorjev po spolih
 
