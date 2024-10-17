@@ -1,5 +1,4 @@
 # Frekvenčna porazdelitev
-
 Opisna spremenljivka ima končno mnogo različnih vrednosti (npr. krvne skupine A-, A+, B-, B+, AB-, AB+, 0-, 0+).
 
 **Frekvenca** je število pojavitev neke vrednosti $a_{j} (j=1,...n)$.
@@ -234,15 +233,15 @@ $$
 ## Kvantili
 
 **Kvantil** statistične spremenljivke za določen delež je vrednost, pod
-katero ležo približno dani delež podatkov. Najbolj pomembni kvanili so:
+katero ležo približno dani delež podatkov. Najbolj pomembni kvantili so:
 
 | ime | delež | oznaka | opis |
 | --------------- | --------------- | --------------- | --------------- |
 | mediana | $1/2$ | $Me$ | ranžirno vrsto razdeli na dve polovici |
-| tercila | $1/3$ in $2/3$ | / | ranžirno vrso razdeli na tri približno enake dele |
-| kvartili | $1/4$, $2/4$, $3/4$ | / | drugi kvartil je enak mediani |
-| decili | $j/10 (j=1,...,9)$ | / | desetine |
-| centili | $j/100 (j=1,...,99)$ | / | stotine |
+| tercil | $1/3$ in $2/3$ | / | ranžirno vrso razdeli na tri približno enake dele |
+| kvartil | $1/4$, $2/4$, $3/4$ | / | drugi kvartil je enak mediani |
+| decil | $j/10 (j=1,...,9)$ | / | desetine |
+| centil | $j/100 (j=1,...,99)$ | / | stotine |
 
 Mediana je eno od meril srednje vrednosti oziroma *centralne tendence*. Med njim spadajo
 tudi aritmetična sredina in modus (vrednost/razred z najvišjo frekvenco).
@@ -269,7 +268,7 @@ $$
 \end{align}
 $$
 
-Prvi pogoj ($ \leq 4.5$) izpolnjujejo vsi elementi do 7, drugi ($\leq 4.5$) pa vsi od 7 dalje.
+Prvi pogoj ($\leq 4.5$) izpolnjujejo vsi elementi do 7, drugi ($\geq 4.5$) pa vsi od 7 dalje.
 Mediana je torej 7.
 
 ---
@@ -326,6 +325,20 @@ $$
 Kadar so podatki podani s frekvenčno tabelo, potem nimamo osnovnih podatkov in kvantile
 izračunamo iz kumulativnih frekvenc s pomočjo interpolacije:
 
+Prvi kvartil je torej med 40 in 59, mediana in tretji kvartil pa med 60 in 79. Če kvantil
+$Q_{\delta}$ leži v razredu s spodnjo mejo $x_{0,min}$, zgornjo mejo $x_{0,max}$,
+frekvenco $f_{0}$ in širino $d_{0}$, potem izračunamo $Q_{\delta}$ tako:
+
+$$
+Q_{\delta} = x_{0,min} + \frac{F(Q_{\delta} - F(x_{0,min}))}{f_{0}} \times d_{0}
+$$
+
+kjer je
+
+$$
+F(Q_{\delta}) = n \times \delta + 0.5
+$$
+
 **Primer** :
 
 | Odsotnost (h) | xi,min | xi,max | di | xi | fi | fi% | Fi | Fi% |
@@ -334,6 +347,15 @@ izračunamo iz kumulativnih frekvenc s pomočjo interpolacije:
 | 40-59 | 39.5 | 59.5 | 20 | 49.5 | 10 | 33.3 | 12 | 40 |
 | 60-79 | 59.5 | 79.5 | 20 | 69.5 | 15 | 50 | 27 | 90 |
 | 80-99 | 79.5 | 99.5 | 20 | 89.5 | 3 | 10 | 30 | 100 |
+
+Za prvi kvartil $Q_{0.25}$:
+- $x_{0,min} = 39.5$,
+- $x_{0,max} = 59.5$,
+- $d_{0} = 20$,
+- $f_{0} = 10$,
+- $F(Q_{25}) = 8$
+
+Torej je $Q_{0.25} = 51.5$. Dobimo še $Q_{0.5} = 64.2$ in $Q_{0.75} = 74.2$.
 
 ### Škatla z brki
 
