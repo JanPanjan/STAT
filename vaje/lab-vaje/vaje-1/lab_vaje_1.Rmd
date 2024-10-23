@@ -1,14 +1,11 @@
 ---
 output:
-  pdf_document: default
   html_document: default
 ---
 <!-- R Commander Markdown Template -->
 
 Laboratorijske vaje 1
 =======================
-
-### Jan
 
 ### `r as.character(Sys.Date())`
 

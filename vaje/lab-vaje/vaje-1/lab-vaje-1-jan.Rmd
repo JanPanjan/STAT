@@ -1,0 +1,191 @@
+---
+author: "Jan Panjan"
+title: "Laboratorijske vaje 1"
+output:
+  html_document: default
+---
+<!-- R Commander Markdown Template -->
+
+```{r echo=FALSE}
+# include this code chunk as-is to set options
+knitr::opts_chunk$set(comment=NA, prompt=TRUE, out.width=750, fig.height=8, fig.width=8)
+library(Rcmdr)
+library(car)
+library(RcmdrMisc)
+setwd("C:/Users/joene/Documents/progAAAAAAA/statistika/vaje/lab-vaje/vaje-1/")
+```
+
+### opening data
+
+```{r}
+data <- read.table("files/data.txt", 
+                   header = T, 
+                   stringsAsFactors = T, 
+                   sep = "\t",
+                   na.strings = "NA",
+                   dec = ".",
+                   strip.white = T)
+```
+
+### Histogram - Sports..hours.per.week
+
+```{r}
+with(data, Hist(Sport..hours.per.week., 
+                scale = "frequency", 
+                col = "darkgray"))
+```
+
+### Histogram - sport..hours.per.week with groups
+
+```{r}
+with(data, Hist(Sport..hours.per.week., 
+                scale = "frequency", 
+                groups = Smoking,
+                breaks = "Sturges"
+                )
+     )
+```
+
+```{r}
+with(data, Hist(Sport..hours.per.week., 
+                scale = "frequency", 
+                groups = Videogames,
+                breaks = "Sturges"
+                )
+     )
+```
+
+### Histogram - Weight with groups
+
+```{r}
+with(data, Hist(Weight, 
+                scale = "frequency", 
+                groups = Sex,
+                )
+     )
+```
+
+### Bar plot - Videogames
+
+```{r}
+with(data, Barplot(Videogames,
+                   by = Sex)) # style divided (default)
+```
+
+```{r}
+with(data, Barplot(Videogames,
+                   by = Sex,
+                   style = "parallel"))
+```
+
+Polepšajmo plot.
+
+```{r}
+with(data, Barplot(Videogames,
+                   by = Sex,
+                   style = "parallel",
+                   xlab = "Videogames",
+                   ylab = "Frequency",
+                   label.bars = T,
+                   legend.pos = "topright")) 
+```
+
+legend positions: 
+
+- "bottomright", 
+- "bottom", 
+- "bottomleft", 
+- "left",
+- "topleft", 
+- "top", 
+- "topright", 
+- "right", 
+- "center"
+
+### Coloring plots
+
+```{r}
+library(colorspace)
+```
+
+### Pie chart: eye color
+
+```{r}
+with(data, piechart(Eye.Color))
+```
+
+Spet dajmo polepšati plot.
+
+```{r}
+# funkcija rainow_hcl sprejme integer, ki pomeni število različnih
+# števil, ki naj jih naredi v plotu. Ker hočemo, da ima vsak atribut
+# svojo barvo, moramo najti število različnih atributov
+num_of_colors <- length(unique(data$Eye.Color))
+
+with(data, piechart(Eye.Color,
+                    main = "Eye.color",
+                    col = rainbow_hcl(num_of_colors),
+                    scale = "frequency"))
+```
+
+Za barve lahko uporabimo tudi funkcijo `palette`, ki vrne vektor barv.
+
+```{r}
+palette()
+```
+
+```{r}
+with(data, piechart(Eye.Color,
+                    main = "Eye.color",
+                    col = palette()[2:6],
+                    scale = "frequency"))
+```
+
+
+Default za scale je `percent`, `frequency` vrne navadne frekvence, `none` vrne samo imena atributov.
+
+### Barplot za eye.color
+
+```{r}
+with(data, Barplot(Eye.Color,
+                   label.bars = T))
+```
+
+
+```{r}
+with(data, Barplot(Eye.Color,
+                   by = Sex,
+                   label.bars = T))
+```
+
+### Scatterplot: Weight ~ Height
+
+```{r}
+scatterplot(Weight~Height, data = data) 
+```
+
+Zdaj pa ga probajmo polepšati in odstraniti odvečne funkcije.
+
+```{r}
+scatterplot(Weight~Height, data = data, regLine = F)
+```
+
+```{r}
+scatterplot(Weight~Height, data = data, regLine = F, boxplots = F)
+```
+
+```{r}
+scatterplot(Weight~Height, data = data,
+            regLine = F,
+            boxplots = F,
+            smooth = F)
+```
+
+Yippie.
+
+### Summary
+
+```{r}
+summary(data)
+```
+
