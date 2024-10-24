@@ -137,7 +137,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>Sample averages</h1>
 <p>Naj podatki 8,9,5,19,150,7,9,1,13,15 predstavljajo vašo populacijo:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>pop <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">8</span>,<span class="dv">9</span>,<span class="dv">5</span>,<span class="dv">19</span>,<span class="dv">150</span>,<span class="dv">7</span>,<span class="dv">9</span>,<span class="dv">1</span>,<span class="dv">13</span>,<span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>pop <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">8</span>,<span class="dv">9</span>,<span class="dv">5</span>,<span class="dv">19</span>,<span class="dv">150</span>,<span class="dv">7</span>,<span class="dv">9</span>,<span class="dv">1</span>,<span class="dv">13</span>,<span class="dv">15</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># var(pop) vrne vzorcno varianco</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># var(pop)*9/10 vrne populacijsko varianco</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <hr>
 <ol type="1">
@@ -187,12 +190,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(means)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 25.768</code></pre>
+<pre><code>[1] 25.288</code></pre>
 </div>
 </div>
 <hr>
 <ol start="3" type="1">
-<li>Iz populacije izločite vrednost 150. Kaj se zgodi s povprečjem in mediano populacije?</li>
+<li>Iz populacije izločite vrednost 150. Kaj se zgodi s povprečjem qn mediano populacije?</li>
 </ol>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>new_pop <span class="ot">&lt;-</span> pop[<span class="sc">-</span>(<span class="fu">which</span>(pop <span class="sc">==</span> <span class="dv">150</span>))]</span>
@@ -217,7 +220,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(means2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 9.646</code></pre>
+<pre><code>[1] 9.6</code></pre>
 </div>
 </div>
 </section>
@@ -229,7 +232,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Podatke očistite in pripravite za uporabo v R-ju. Pripravite .txt datoteko.</li>
 </ol>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>file <span class="ot">&lt;-</span> <span class="fu">read.delim</span>(<span class="st">"C:</span><span class="sc">\\</span><span class="st">Users</span><span class="sc">\\</span><span class="st">joene</span><span class="sc">\\</span><span class="st">Documents</span><span class="sc">\\</span><span class="st">progAAAAAAA</span><span class="sc">\\</span><span class="st">statistika</span><span class="sc">\\</span><span class="st">vaje</span><span class="sc">\\</span><span class="st">lab-vaje</span><span class="sc">\\</span><span class="st">vaje-1</span><span class="sc">\\</span><span class="st">files</span><span class="sc">\\</span><span class="st">poljscine.txt"</span>, <span class="at">row.names =</span> <span class="dv">1</span>)</span>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>file <span class="ot">&lt;-</span> <span class="fu">read.delim</span>(<span class="st">"C:</span><span class="sc">\\</span><span class="st">Users</span><span class="sc">\\</span><span class="st">joene</span><span class="sc">\\</span><span class="st">Documents</span><span class="sc">\\</span><span class="st">progAAAAAAA</span><span class="sc">\\</span><span class="st">statistika</span><span class="sc">\\</span><span class="st">vaje</span><span class="sc">\\</span><span class="st">lab-vaje</span><span class="sc">\\</span><span class="st">vaje-2</span><span class="sc">\\</span><span class="st">files</span><span class="sc">\\</span><span class="st">poljscine.txt"</span>, <span class="at">row.names =</span> <span class="dv">1</span>)</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="fu">head</span>(file))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">

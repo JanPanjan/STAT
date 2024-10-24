@@ -28,6 +28,9 @@ populacijo:
 
 ```{r}
 pop <- c(8,9,5,19,150,7,9,1,13,15)
+
+# var(pop) vrne vzorcno varianco
+# var(pop)*9/10 vrne populacijsko varianco
 ```
 
 ---
@@ -101,7 +104,7 @@ leta 2023.
 1. Podatke očistite in pripravite za uporabo v R-ju. Pripravite .txt datoteko.
 
 ```{r} 
-file <- read.delim("C:\\Users\\joene\\Documents\\progAAAAAAA\\statistika\\vaje\\lab-vaje\\vaje-1\\files\\poljscine.txt", row.names = 1)
+file <- read.delim("C:\\Users\\joene\\Documents\\progAAAAAAA\\statistika\\vaje\\lab-vaje\\vaje-2\\files\\poljscine.txt", row.names = 1)
 
 knitr::kable(head(file))
 ```
@@ -148,5 +151,6 @@ lapply(koruza_data, mean)
 5. Grafično predstavite podatke za hmelj in krompir v dveh dimenzijah.
 
 ```{r} 
-plot(x = file$Hmelj, y = file$Krompir, xlab = "Hmelj (v ha površine)", ylab = "Krompir (v ha površine)", main = "Površina pridelave hmelja in krompirja")
+plot(x = file$Hmelj, y = file$Krompir, xlab = "Hmelj (v ha površine)", ylab = "Krompir (v ha površine)", main = "Površina pridelave hmelja in krompirja",
+     hline = "smooth")
 ```
