@@ -1,0 +1,60 @@
+---
+title: "Kviz 1"
+subtitle: "Statistika 2024/25"
+author: "Jan Panjan"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r}
+library(Rcmdr)
+library(tidyverse)
+```
+
+```{r}
+my.data <- read.delim("data.txt")
+head(my.data, 3)
+colnames(my.data)
+rownames(my.data)
+```
+
+```{r}
+x <- 2
+z <- 8
+
+my.data <- my.data[unique(c(seq(x, nrow(my.data), 10), seq(z, nrow(my.data), 10))), ]
+my.data %>% nrow()
+knitr::kable(head(my.data, 3))
+```
+
+## 1.
+
+### 1.1 Histogram spremenljivke Books..how.many.per.year
+
+```{r}
+# poisson distribution
+hist.data <- hist(my.data$Books..how.many.per.year, plot = F)
+sekv <- seq(min(hist.data$breaks), max(hist.data$breaks), 1)
+scale_factor <- max(hist.data$counts)
+lamba_possion <- mean(my.data$Books..how.many.per.year)
+
+hist(my.data$Books..how.many.per.year, 
+	 xlab = "Books per year",
+     breaks = hist.data$breaks,
+     main = "Histogram od Books..how.many.per.year")
+
+lines(sekv, dpois(sekv, lambda = lamba_possion) * scale_factor, col = "red", lwd = 2)
+
+# negtive binomial distribution
+fit_nb <- MASS::fitdistr(my.data$Books..how.many.per.year, "Negative Binomial")
+
+lines(sekv, dnbinom(sekv, size = fit_nb$estimate["size"], mu = fit_nb$estimate["mu"]) * scale_factor, col = "blue", lwd = 2)
+```
+
+### 1.2 Kakšen oblike je porazdelitev
+
+Porazdelitev je asimetrična.
+
+### 1.3 Ustrezna mera središčnosti glede na obliko porazdelitve
+
+### 1.4 Mera variabilnosti glede na obliko porazdelitve
