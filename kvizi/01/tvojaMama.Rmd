@@ -1,13 +1,14 @@
 ---
 title: "Kviz 1"
+subtitle: "Statistika 2024/25"
 author: "Jan Panjan"
+date: "`r Sys.Date()`"
 output: pdf_document
 ---
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
+```{r message=FALSE, warning=FALSE}
 library(Rcmdr)
 library(tidyverse)
-setwd("C:/Users/joene/Documents/progAAAAAAA/statistika/kvizi/01")
 ```
 
 ```{r}
@@ -57,7 +58,6 @@ col <- my.data$Sport..hours.per.week.
 boxplot(col, 
         main = "Okvir z ročaji za ure športanja na teden",
         ylab = "Število ur [h]")
-
 ```
 
 Max vrednost je 15, min vrednost je 0. Mediana je malo manj kot 5. Večina vrednosti se pojavi med cca 2.5 in 8. Mediana je manjša od aritmetične sredine,
@@ -71,8 +71,8 @@ Napišite funkcijo, ki bo odvisna od vrednosti `r` in bo vrnila obseg kroga s
 polmerom `r`. Izračunajte obseg kroga s polmerom `r = x` (kjer je `x` je zadnja števka vaše vpisne številke).
 
 ```{r}
-obseg_kroga <- function(r) {
-  return(2 * pi * r)
+obseg_kroga <- \(r) {
+  2 * pi * r
 }
 
 x <- 2

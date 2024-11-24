@@ -1,7 +1,7 @@
 ---
 title: "Kviz 1"
 author: "Jan Panjan"
-output: pdf_document
+format: pdf
 ---
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
@@ -67,8 +67,8 @@ Osamelci so vrednosti, ki se veliko razlikujejo od večine ostalih vrednosti.
 
 ## Obseg kroga
 
-Napišite funkcijo, ki bo odvisna od vrednosti `r` in bo vrnila obseg kroga s
-polmerom `r`. Izračunajte obseg kroga s polmerom `r = x` (kjer je `x` je zadnja števka vaše vpisne številke).
+Napišite funkcijo, ki bo odvisna od vrednosti r in bo vrnila obseg kroga s
+polmerom r. Izračunajte obseg kroga s polmerom r = x (kjer je x je zadnja števka vaše vpisne številke).
 
 ```{r}
 obseg_kroga <- function(r) {
@@ -86,7 +86,6 @@ Na spletni strani Statističnega urada Republike Slovenije poiščite podatke za
 ```{r}
 df <- read.csv("sursi1.csv", sep = ";", dec = ".")
 names(df)[-c(1,2)] <- 2008:2023
-head(df, 3)
 ```
 
 a) Naj podatki za leto 2023 predstavljajo vašo populacijo. Izračunajte populacijsko povprečje. Izvedite simulacijo, kjer 200-krat ponovite izbiranje vzorca velikosti 6 in narišite histogram vzorčnih povprečij.
@@ -141,8 +140,7 @@ plot(x = names(ok),
      ylab = "Dohodek", 
      ylim = c(min(ok), max(ok)),
      main = "Razpoložljivi dohodek v Obalno-kraški regiji",
-     col = "blue"
-     )
+     col = "blue")
 lines(x = names(os), 
       y = simp(os),
       col = "red")
