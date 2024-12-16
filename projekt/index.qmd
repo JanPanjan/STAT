@@ -1,0 +1,8 @@
+---
+author: "Jan Panjan"
+title: ""
+subtitle: "Statistika 2024/25"
+date: ""
+format:
+	html
+---
