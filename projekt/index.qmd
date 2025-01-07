@@ -2,7 +2,34 @@
 author: "Jan Panjan"
 title: ""
 subtitle: "Statistika 2024/25"
-date: ""
-format:
-	html
+date: "7/1/2024"
+format:	html
 ---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+read data
+```{r}
+df <- "winequality-red.csv" |>
+	read.csv(sep = ";") |>
+	as_tibble()
+```
+
+porazdelitve
+kislost, sladkor, celoten zveplov dioksid, kvaliteta
+```{r}
+hist(df$fixed.acidity)
+hist(df$residual.sugar)
+hist(df$total.sulfur.dioxide)
+hist(df$quality)
+```
+
+```{r}
+ggplot(df, aes(x = fixed.acidity)) + geom_bar()
+ggplot(df, aes(x = residual.sugar)) + geom_bar()
+ggplot(df, aes(x = total.sulfur.dioxide)) + geom_bar()
+ggplot(df, aes(x = quality)) + geom_bar()
+```

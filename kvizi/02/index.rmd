@@ -1,0 +1,230 @@
+---
+title: "Kviz 2"
+subtitle: "Statistika 2024/25"
+author: "Jan Panjan"
+date: "12/12/2024"
+output:
+  html_document:
+    toc: true
+    theme: united
+---
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(pwr)
+```
+
+```{r, echo=F}
+# helper function
+matDisp <- function(namedVec) {
+  names <- names(namedVec)
+  vec <- setNames(namedVec, NULL)
+  matrix(vec, dimnames = list(names, "Vrednost"))
+}
+```
+
+# Branje podatkov
+
+```{r}
+data <- read.delim("data.txt")
+```
+
+```{r}
+x <- 2
+z <- 8
+
+my.data <- data[unique(c(seq(x, nrow(data), 10), seq(z, nrow(data), 10))), ] %>%
+  as.data.frame()
+nrow(my.data)
+```
+
+<br>
+
+# Naloga 1
+
+```{r, echo=F}
+# find Cohens d for t test
+sample      <- my.data$Height
+sample_mean <- mean(sample)
+sample_sd   <- sd(sample)
+
+val_d <- (sample_mean - 170) / sample_sd
+
+t_test <- pwr.t.test(
+  d = val_d,
+  sig.level = 0.05,
+  n = 105,
+  type = "one.sample",
+  alternative = "two.sided"
+)
+t_test
+```
+
+Vrednost $d = 0.2934223$ je relativno majhna, kar pomeni, da je razlika med vzorčnim
+povprečjem (`sample_mean`) in populacijskim povprečjem (`mean(data$Height)`) precej
+majhna glede na standardni odklon višin vzorca (`sample_sd`).
+
+```{r, echo=F}
+matDisp(namedVec = c(
+  "Populacijsko povprečje" = mean(data$Height),
+  "Vzorcno povprečje" = sample_mean,
+  "Vzorčni standardni odklon" = sample_sd
+))
+```
+
+Moč testa je $0.8459$, kar pomeni, da je $84.59 \%$ verjetnost, da je
+ničelna hipoteza $H_0$ zavrnjena - razlika med vzorčnim in populacijskim
+povprečjem je zanemarljiva. To pomeni, da so podatki statistično značilni.
+
+<br>
+
+Vsebinski sklep je torej, da **populacijsko povprečje ni (precej) različno
+od $170 \ cm$**.
+
+<br>
+
+# Naloga 2
+
+Da bi videli porazdelitev podatkov, sem uporabil histogram višin.
+Opazno je, da graf ni povsem simetričen.
+
+```{r, echo=F}
+hist(sample, breaks = seq(150, 200, 2), col = "orange")
+```
+
+<br>
+
+Poleg histograma lahko primerjam porazdelitev podatkov z normalno 
+porazdelitvijo tudi s Q-Q grafom.
+
+```{r, echo=F}
+qqnorm(sample, col = "black")
+qqline(sample, col = "blue")
+```
+
+<br>
+
+Velja, da so podatki bolj ali manj normalno porazdeljeni, ko točke na grafu sledijo
+premici (premica - normalna porazdelitev, točke - moji podatki). 
+
+Opazno je, da pride do majhnega odklona pri robovih podatkov, toda še vedno sledi obliki
+normalne porazdelitve, zaradi česar lahko sklepam, da so **podatki dokaj normalno porazdeljeni**.
+
+<br>
+
+# Naloga 3
+
+```{r, echo=F}
+n <- 200
+samples <- matrix(0, nrow = n, ncol = 1)
+
+for (i in 1:n) {
+  binom_sample <- rgeom(n = 30, p = 0.5)
+  samples[i, ] <- mean(binom_sample)
+}
+
+hist(samples, main = "Histogram 200 vrednosti vzorčnega povprečja", col = "orange")
+```
+
+<br>
+
+Pričakovana vrednost $E$ geometrijske slučajne spremenljivke $X ~ Geom(p)$, se izračuna 
+preko enačbe $E(X) = 1/p$. Predpostavljam, da je verjetnost uspešnega dogodka $0.5$.
+
+Varianca $Var$ geometrijske slučajne spremenljivke $X \approx Geom(p)$, se izračuna 
+preko enačbe $(1-p)/p^2$.
+
+```{r, echo=F}
+p <- 0.5
+Ex <- 1 / p
+VarX <- (1 - p) / p**p
+
+matDisp(namedVec = c(
+  "Pričakovana vrednost" = Ex,
+  "Varianca" = VarX
+))
+```
+
+Vrednosti vzorčnega povprečja so glede na histogram precej simetrično porazdeljene.
+Porazdelitev lahko določim tudi s pomočjo mediane in aritmetičnega povprečja.
+
+```{r, echo=F}
+Me <- median(samples)
+X_bar <- mean(samples)
+
+matDisp(namedVec = c(
+  "Mediana" = Me,
+  "Aritmetično povprečje" = X_bar,
+  "Razlika" = sqrt((Me - X_bar)**2)
+))
+```
+
+Ker je razlika med vrednostima zanemaljiva, lahko 
+**trdim, da je porazdelitev simetrična**.
+
+<br>
+
+# Naloga 4
+
+> Ali se vrednost sladkorja v kriv za diabetike
+> pred in po zdravljenju razlikuje?
+
+Podatke sem dobil iz naslednjih virov:
+
+-  <https://www.diabetes-zveza.si/diabetes-in-jaz/hba1c-vrednosti/>
+
+- <https://en.wikipedia.org/wiki/Blood_sugar_level>
+
+- <https://www.scribbr.com/statistics/t-test/#:~:text=When%20to%20use%20a%20t,pairwise%20comparison).>
+
+```{r}
+n <- 50
+avg_B <- 5; avg_A <- 13
+sd_B  <- 1;  sd_A <- 2
+
+s_B <- rnorm(n = n, mean = avg_B, sd = sd_B)
+s_A <- rnorm(n = n, mean = avg_A, sd = sd_A)
+```
+
+Ker imam dva odvisna vzorca in preučujemo 2 spremenljivki - $A$ (after) 
+in $B$ (before) - na isti populaciji, bom uporabil dvostranski T-test.
+Testiral bom ničelno domnevo $H_0: \mu_B = \mu_A$ 
+($\mu_B = $ pop. povprečje pred zdavljenjem, $\mu_A = $ pop. povprečje po
+zdravljenju).
+
+
+```{r, echo=F}
+t.test(
+  x = s_B,
+  y = s_A,
+  paired = FALSE,
+  alternative = "two.sided"
+)
+```
+
+Vrednost `p-value < 2.2e-16` pomeni, da je verjetnost, da zavrnemo
+ničelno hipotezo visoka. $95 \ %-$interval zaupanja je $(-9.26, -7.98)$, 
+kar pomeni, da lahko s 95-procentno gotovostjo rečemo, da je razlika
+povprečji v tem intervalu.
+
+```{r, echo=F}
+pwr.t.test(
+  d = (avg_B - avg_A) / sd_B,
+  sig.level = 0.01,  # alpha
+  n = n,
+  type = "two.sample",
+  alternative = "two.sided"
+)
+```
+
+Visoka vrednost `d = 8` pomeni, da je velika razlika med vzorcema.
+Vrednost `power = 1` pomeni, da lahko test $100 \ %$ zagotovo zavrže
+ničelno domnevo, če je ta napačna, oziroma, test je zelo močen.
+
+<br>
+
+Glede na zgornje ugotovitve lahko sklepam, da **zdravljenje zagotovo
+deluje**. Z močjo testa sem zadovoljen. Bi pa dodal, da bi verjetno v
+praksi dobil malo drugačne rezultate, saj sem izbral naključne vzorce
+s podatki, ki morda niso zelo točni, kar se tudi pokaže v rezultatih
+ob 100% moči testa.
