@@ -1,0 +1,286 @@
+---
+title: "Kviz 3"
+subtitle: "Statistika 2024/25"
+author: "Jan Panjan"
+date: "12/12/2024"
+execution:
+  warning: false
+  code-fold: true
+format:
+  html:
+    toc: true
+    theme: flatly
+---
+
+```{r}
+# setwd("kvizi/03")
+```
+
+## Uporabljeni paketi
+
+```{r}
+#| output: false
+library(tidyverse)
+library(ggplot2)
+```
+
+## Branje podatkov
+
+```{r}
+data <- read.delim("data.txt")
+x <- 8 # prezadnja števka
+z <- 2 # zadnja števka
+data[unique(c(seq(x, nrow(data), 10), seq(z, nrow(data), 10))), ] %>%
+  as.data.frame() -> my.data
+
+nrow(my.data)
+```
+
+Preimenoval bom stolpce za lažje delo.
+
+```{r}
+names(my.data) <- names(my.data) |> 
+  gsub(pattern = "\\.+", replacement = "_") |> 
+  gsub(pattern = "_$", replacement = "")
+
+names(my.data)
+```
+
+## Navodila 
+
+Vaša naloga bo narediti več statističnih analiz. Vsaka statistična analiza naj vključuje:
+- eksplicitno zapisani ničelno in alternativno hipotezo,
+- utemeljitev uporabe izbranega statističnega testa,
+- izračun z R,
+- statistični sklep
+- in vsebinski sklep.
+
+Če ni določeno drugače, uporabite $\alpha = 0.05$.
+
+## Naloga 1
+
+***Pri $\alpha = 0.01$ preverite ali se številka čevlja razlikuje pri študentih in
+študentkah.***
+
+```{r}
+#| code-fold: true
+#| code-summary: podatki
+df <- select(my.data, Sex, Shoe_size) |>
+  filter(Sex %in% c("male", "female"))
+
+df |> summarise(
+  n = n(),
+  povprecje = mean(Shoe_size),
+  "std. odklon" = sd(Shoe_size),
+  .by = Sex
+)
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: test korelacije
+sz_M <- my.data[my.data$Sex == "male", "Shoe_size"]
+sz_F <- my.data[my.data$Sex == "female", "Shoe_size"]
+t.test(sz_M, sz_F, sig.level = 0.01, alternative = "two.sided")
+```
+
+Visoka $p$ vrednost nakazuje na to, da odstopanja niso statistično značilna - $H_0$ obdrđimo.
+Velikost čevlja se med študenti in študentkami razlikuje.
+
+## Naloga 2
+
+***Predstavite podatke za številko čevlja in težo z ustreznim grafom. Preverite
+ali je številka čevlja linearno odvisna od teže v populaciji študentov. Interpretirajte
+rezultate. Komentirajte ali je predstavljen problem smiselno zastavljen.***
+
+- $H_0:$ številka čevlja in teža sta linearno odvisni spremenljivki
+- $H_1:$ številka čevlja in teža nista linearno odvisni spremenljivki
+
+```{r}
+#| code-fold: true
+#| code-summary: graf
+ggplot(df, aes(x = Shoe_size)) +
+  geom_histogram() +
+  facet_wrap(~ Sex, ncol = 2) +
+  labs(
+    x = "Velikost čevlja",
+    y = "Frekvenca",
+    title = "Porazdelitev velikosti čevlja glede na spol"
+  )
+
+df2 <- select(my.data, Sex, Weight) |>
+  filter(Sex %in% c("male", "female"))
+
+ggplot(df2, aes(x = Weight)) +
+  geom_histogram() +
+  facet_wrap(~ Sex, ncol = 2) +
+  labs(
+    x = "Teža",
+    y = "Frekvenca",
+    title = "Porazdelitev teže glede na spol"
+  )
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: test korelacije
+w_M <- filter(my.data, Sex == "male") |>
+  select(Weight) |>
+  unlist() |>
+  setNames(NULL)
+
+cor.test(
+  x = sz_M, 
+  y = w_M,
+  method = "pearson",
+  alternative = "two.sided"
+)
+```
+
+Korelacija $\approx$ 0.695 je nadpovprečna, zato lahko trdim, da sta teža in velikost noge
+linearno korelirani. Podobno je razvidno iz spodnjega grafa. Hipotezo $H_0$ zavržemo v prid
+alternativne domneve $H_1$.
+
+```{r}
+#| code-fold: true
+#| code-summary: graf
+ggplot(
+  data.frame(
+    "ShoeSize" = sz_M, 
+    "Weight" = w_M
+  ), 
+  aes(x = ShoeSize, y = Weight)
+  ) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(
+    title = "Odvisnost med velikostjo noge in težo",
+    x = "Velikost noge",
+    y = "Teža"
+  )
+```
+
+## Naloga 3
+
+***Preverite ali sta Teža in število ur športa na teden monotono povezani slučajni
+spremenljivki v populaciji.***
+
+- $H_0:$ število ur športa na teden in teža sta monotono povezani spremenljivki
+- $H_1:$ število ur športa na teden in teža nista monotono povezani spremenljivki
+
+```{r}
+df3 <- select(my.data, Weight, Sport_hours_per_week, Sex)
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: test korelacije za študente
+cor.test(
+  x = {
+    filter(df3, Sex == "male") |> select(Sport_hours_per_week) |> unlist()
+  },
+  y = {
+    filter(df3, Sex == "male") |> select(Weight) |> unlist()
+  },
+  method = "spearman",
+  alternative = "two.sided"
+)
+```
+
+Vrednost 0.05 ne implicira monotone korelacije med težo in število ur športa na teden v populaciji študentov. To je razvidno tudi iz razpršenosti točk na grafu.
+
+$H_0$ zavržemo v prid alternativne domneve $H_1$, saj so odstopanja statistično značilna.
+
+```{r}
+#| code-fold: true
+#| code-summary: graf monotone korelacije med študenti
+ggplot(
+  data.frame(
+    "w" = { filter(df3, Sex == "male") |> select(Weight) |> unlist() },
+    "spw" = { filter(df3, Sex == "male") |> select(Sport_hours_per_week) |> unlist() }
+  ),
+  aes(x = spw, y = w)
+) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(
+    title = "Povezanost med težo noge in števila ur športa na teden v populaciji",
+    x = "Število ur športa na teden",
+    y = "Teža"
+  )
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: test korelacije za študentke
+cor.test(
+  x = {
+    filter(df3, Sex == "female") |> select(Sport_hours_per_week) |> unlist()
+  },
+  y = {
+    filter(df3, Sex == "female") |> select(Weight) |> unlist()
+  },
+  method = "spearman",
+  alternative = "two.sided"
+)
+```
+
+Vrednost 0.64 implicira, da obstaja visoka monotona korelacija med težo in število ur športa na teden v populaciji študentk. Točke na grafu so manj razpršene, kot pri študentih. 
+
+$H_0$ obdržimo, saj odstopanja niso statistično značilna.
+
+```{r}
+#| code-fold: true
+#| code-summary: graf monotone korelacije med študentkami
+ggplot(
+  data.frame(
+    "w" = { filter(df3, Sex == "female") |> select(Weight) |> unlist() },
+    "spw" = { filter(df3, Sex == "female") |> select(Sport_hours_per_week) |> unlist() }
+  ),
+  aes(x = spw, y = w)
+  ) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(
+    title = "Povezanost med težo noge in števila ur športa na teden v populaciji",
+    x = "Velikost noge",
+    y = "Teža"
+  )
+```
+
+## Naloga 4
+
+***Preverite ali je zastopanost domačih ljubljenčkov v populaciji študentov
+različna od: pes 41%, mačka 33%, riba 10%, drugo 16%.***
+
+```{r}
+studenti <- filter(my.data, Sex == "male") |> select(Pet)
+
+pets <- studenti |>
+  separate_wider_delim(
+    delim = ", ",
+    cols = Pet,
+    names = c("a", "b", "c"),
+    too_few = "align_start"
+  ) |>
+  map_df(str_to_lower)
+
+# funkcija vrne število vrstic s `pet`
+pet_count <- \(pet) {
+  if (!is.character(pet)) {
+    message("pet must be a character vector.")
+    return(0)
+  }
+  pets |>
+    unlist() |>
+    grep(pattern = pet) |>
+    length()
+}
+
+pet_types <- c("dog", "cat", "fish", "other")
+pets_freq <- sapply(pet_types, pet_count)
+pets_freq
+
+chisq.test(x = pets_freq, p = c(0.41, 0.33, 0.10, 0.16), rescale.p = T)
+```
+

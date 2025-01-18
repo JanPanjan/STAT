@@ -1,5 +1,5 @@
 ---
-title: "Kviz 2"
+title: "Kviz 3"
 subtitle: "Statistika 2024/25"
 author: "Jan Panjan"
 date: "12/12/2024"
