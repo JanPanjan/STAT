@@ -10,11 +10,8 @@ format:
   html:
     toc: true
     theme: flatly
+    monofont: JetBrains Mono
 ---
-
-```{r}
-# setwd("kvizi/03")
-```
 
 ## Uporabljeni paketi
 
@@ -46,21 +43,15 @@ names(my.data) <- names(my.data) |>
 names(my.data)
 ```
 
-## Navodila 
+## Navodila
 
-Vaša naloga bo narediti več statističnih analiz. Vsaka statistična analiza naj vključuje:
-- eksplicitno zapisani ničelno in alternativno hipotezo,
-- utemeljitev uporabe izbranega statističnega testa,
-- izračun z R,
-- statistični sklep
-- in vsebinski sklep.
+Vaša naloga bo narediti več statističnih analiz. Vsaka statistična analiza naj vključuje: - eksplicitno zapisani ničelno in alternativno hipotezo, - utemeljitev uporabe izbranega statističnega testa, - izračun z R, - statistični sklep - in vsebinski sklep.
 
 Če ni določeno drugače, uporabite $\alpha = 0.05$.
 
 ## Naloga 1
 
-***Pri $\alpha = 0.01$ preverite ali se številka čevlja razlikuje pri študentih in
-študentkah.***
+***Pri*** $\alpha = 0.01$ preverite ali se številka čevlja razlikuje pri študentih in študentkah.
 
 ```{r}
 #| code-fold: true
@@ -84,23 +75,20 @@ sz_F <- my.data[my.data$Sex == "female", "Shoe_size"]
 t.test(sz_M, sz_F, sig.level = 0.01, alternative = "two.sided")
 ```
 
-Visoka $p$ vrednost nakazuje na to, da odstopanja niso statistično značilna - $H_0$ obdrđimo.
-Velikost čevlja se med študenti in študentkami razlikuje.
+Visoka $p$ vrednost nakazuje na to, da odstopanja niso statistično značilna - $H_0$ obdrđimo. Velikost čevlja se med študenti in študentkami razlikuje.
 
 ## Naloga 2
 
-***Predstavite podatke za številko čevlja in težo z ustreznim grafom. Preverite
-ali je številka čevlja linearno odvisna od teže v populaciji študentov. Interpretirajte
-rezultate. Komentirajte ali je predstavljen problem smiselno zastavljen.***
+***Predstavite podatke za številko čevlja in težo z ustreznim grafom. Preverite ali je številka čevlja linearno odvisna od teže v populaciji študentov. Interpretirajte rezultate. Komentirajte ali je predstavljen problem smiselno zastavljen.***
 
-- $H_0:$ številka čevlja in teža sta linearno odvisni spremenljivki
-- $H_1:$ številka čevlja in teža nista linearno odvisni spremenljivki
+-   $H_0:$ številka čevlja in teža sta linearno odvisni spremenljivki
+-   $H_1:$ številka čevlja in teža nista linearno odvisni spremenljivki
 
 ```{r}
 #| code-fold: true
 #| code-summary: graf
 ggplot(df, aes(x = Shoe_size)) +
-  geom_histogram() +
+  geom_histogram(binwidth = 1) +
   facet_wrap(~ Sex, ncol = 2) +
   labs(
     x = "Velikost čevlja",
@@ -112,7 +100,7 @@ df2 <- select(my.data, Sex, Weight) |>
   filter(Sex %in% c("male", "female"))
 
 ggplot(df2, aes(x = Weight)) +
-  geom_histogram() +
+  geom_histogram(binwidth = 5) +
   facet_wrap(~ Sex, ncol = 2) +
   labs(
     x = "Teža",
@@ -137,9 +125,7 @@ cor.test(
 )
 ```
 
-Korelacija $\approx$ 0.695 je nadpovprečna, zato lahko trdim, da sta teža in velikost noge
-linearno korelirani. Podobno je razvidno iz spodnjega grafa. Hipotezo $H_0$ zavržemo v prid
-alternativne domneve $H_1$.
+Korelacija $\approx$ 0.695 je nadpovprečna, zato lahko trdim, da sta teža in velikost noge linearno korelirani. Podobno je razvidno iz spodnjega grafa. Hipotezo $H_0$ zavržemo v prid alternativne domneve $H_1$.
 
 ```{r}
 #| code-fold: true
@@ -152,7 +138,7 @@ ggplot(
   aes(x = ShoeSize, y = Weight)
   ) +
   geom_point() +
-  geom_smooth(method = "lm") +
+  geom_smooth() +
   labs(
     title = "Odvisnost med velikostjo noge in težo",
     x = "Velikost noge",
@@ -162,11 +148,10 @@ ggplot(
 
 ## Naloga 3
 
-***Preverite ali sta Teža in število ur športa na teden monotono povezani slučajni
-spremenljivki v populaciji.***
+***Preverite ali sta Teža in število ur športa na teden monotono povezani slučajni spremenljivki v populaciji.***
 
-- $H_0:$ število ur športa na teden in teža sta monotono povezani spremenljivki
-- $H_1:$ število ur športa na teden in teža nista monotono povezani spremenljivki
+-   $H_0:$ število ur športa na teden in teža sta monotono povezani spremenljivki
+-   $H_1:$ število ur športa na teden in teža nista monotono povezani spremenljivki
 
 ```{r}
 df3 <- select(my.data, Weight, Sport_hours_per_week, Sex)
@@ -202,7 +187,7 @@ ggplot(
   aes(x = spw, y = w)
 ) +
   geom_point() +
-  geom_smooth(method = "lm") +
+  geom_smooth() +
   labs(
     title = "Povezanost med težo noge in števila ur športa na teden v populaciji",
     x = "Število ur športa na teden",
@@ -225,7 +210,7 @@ cor.test(
 )
 ```
 
-Vrednost 0.64 implicira, da obstaja visoka monotona korelacija med težo in število ur športa na teden v populaciji študentk. Točke na grafu so manj razpršene, kot pri študentih. 
+Vrednost 0.64 implicira, da obstaja visoka monotona korelacija med težo in število ur športa na teden v populaciji študentk. Točke na grafu so manj razpršene, kot pri študentih.
 
 $H_0$ obdržimo, saj odstopanja niso statistično značilna.
 
@@ -240,7 +225,7 @@ ggplot(
   aes(x = spw, y = w)
   ) +
   geom_point() +
-  geom_smooth(method = "lm") +
+  geom_smooth() +
   labs(
     title = "Povezanost med težo noge in števila ur športa na teden v populaciji",
     x = "Velikost noge",
@@ -250,12 +235,15 @@ ggplot(
 
 ## Naloga 4
 
-***Preverite ali je zastopanost domačih ljubljenčkov v populaciji študentov
-različna od: pes 41%, mačka 33%, riba 10%, drugo 16%.***
+***Preverite ali je zastopanost domačih ljubljenčkov v populaciji študentov različna od: pes 41%, mačka 33%, riba 10%, drugo 16%.***
 
 ```{r}
 studenti <- filter(my.data, Sex == "male") |> select(Pet)
 
+slice_sample(studenti, n = 10)
+```
+
+```{r}
 pets <- studenti |>
   separate_wider_delim(
     delim = ", ",
@@ -265,6 +253,10 @@ pets <- studenti |>
   ) |>
   map_df(str_to_lower)
 
+slice_sample(pets, n = 10)
+```
+
+```{r}
 # funkcija vrne število vrstic s `pet`
 pet_count <- \(pet) {
   if (!is.character(pet)) {
@@ -276,11 +268,14 @@ pet_count <- \(pet) {
     grep(pattern = pet) |>
     length()
 }
+```
 
+```{r}
 pet_types <- c("dog", "cat", "fish", "other")
 pets_freq <- sapply(pet_types, pet_count)
 pets_freq
-
-chisq.test(x = pets_freq, p = c(0.41, 0.33, 0.10, 0.16), rescale.p = T)
 ```
 
+```{r}
+chisq.test(x = pets_freq, p = c(0.41, 0.33, 0.10, 0.16), rescale.p = T)
+```

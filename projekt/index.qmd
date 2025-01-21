@@ -1,35 +1,229 @@
 ---
 author: "Jan Panjan"
-title: ""
+title: "Domača naloga - Rdeče vino"
 subtitle: "Statistika 2024/25"
-date: "7/1/2024"
-format:	html
+date: "21/01/2024"
+format:	
+  html:
+    monofont: JetBrains Mono
+    them: flatly
+execute:
+  warning: false
+  toc: true
+  toc-fold: true
 ---
 
+# Uvod
+
+Kvaliteta vina je odvisna od številnih dejavnikov, od sort grozdja z različnimi lastnostmi, do vinarskih postokov uporabljenih za njegovo predelovanje. Analiza kakovosti vina je pomembna tako za potrošnike, saj jim tako pomaga pri izbiri vina ter pri proizvjalacih, ki lahko na podlagi rezultatov analiz ugotovijo, katere tehnike pridelovanja, sorte grozdja in podobno vpliva na kakovost vina.
+
+V tem poročilu so predstavljene statistične analize podatkov kakovosti rdečega vina. Namen naloge je pripraviti poročilo, ki poda odgovore na vseh 5 zastavljenih vprašanj, ki se osredotočajo na kemijse lastnosti in njihov vpliv na kakovost vina. Uporabljati je bilo potrebno program R. Pri vsakem vprašanju je podan opis problema, opis uporabljenih statističnih metod za analizo problema ter rezultati analize in njihova interpretacija.
+
+# Podatki
+
+## Uporabljeni paketi
+
+Za delo s podatki sem uporabljal paket `tidyverse`, ki je ustvarjen za delo s podatkovnimi okvirji ter `ggplot2` in `gridExtra` za kvalitetne vizualne predstavitve distiliranih podatkov.
+
 ```{r}
+#| output: false
 library(tidyverse)
 library(ggplot2)
+library(gridExtra)
 ```
 
-read data
+## Branje podatkov
+
+Podatki so shranjeni tako v `csv` kot v `xlsx` obliki. Odločil sem se, da bom uporabil podatke iz `csv` datoteke, saj za branje ni potrebna uporaba dodatnih paketov.
+
 ```{r}
 df <- "winequality-red.csv" |>
 	read.csv(sep = ";") |>
 	as_tibble()
 ```
 
-porazdelitve
-kislost, sladkor, celoten zveplov dioksid, kvaliteta
+## Predstavitev podatkov
+
+Podatkovni okvir vsebuje različne kemijske lastnosti vin ter končno oceno kakovosti ocenjevalcev vina. Sestavljen je iz 1599 vrstic z 12 numeričnimi spremenljivkami. 
+
 ```{r}
-hist(df$fixed.acidity)
-hist(df$residual.sugar)
-hist(df$total.sulfur.dioxide)
-hist(df$quality)
+#| cache: true
+#| code-fold: true
+#| code-summary: manjkajoče vrednosti
+map_df(df, \(col){
+  is.na(col) |> 
+    grep(pattern = "TRUE") |> 
+    length()
+}) |> 
+  pivot_longer(cols = everything(df)) %>% {
+    names(.) <- c("spremenljivka", "manjkajoče_vrednosti")
+    .
+  }
+```
+
+Podatki so že očiščeni, zato dodatno delo ni potrebno.
+
+```{r}
+#| cache: true
+#| code-fold: true
+#| code-summary: naključni vzorec velikosti 5
+df |> slice_sample(n = 5) |> knitr::kable()
 ```
 
 ```{r}
-ggplot(df, aes(x = fixed.acidity)) + geom_bar()
-ggplot(df, aes(x = residual.sugar)) + geom_bar()
-ggplot(df, aes(x = total.sulfur.dioxide)) + geom_bar()
-ggplot(df, aes(x = quality)) + geom_bar()
+#| cache: true
+#| code-fold: true
+#| code-summary: povzetek podatkov
+sapply(df[names(df)], summary) |> knitr::kable()
 ```
+
+<br>
+
+Lahko opazimo, da se pojavijo samo ocene med 3 in 8 ter da je povprečna ocena $\approx 5.5$.
+Spodaj je opis vseh spremenljivk.
+
+| spremenljivka        | tip       | opis                                  |
+|----------------------|-----------|---------------------------------------|
+| fixed.acidity        | numerični | kislost vina                          |
+| volatile.acidity     | numerični | hlapna kislost vina                   |
+| citric.acid          | numerični | vsebnost citronske kisline            |
+| residual.sugar       | numerični | vsebnost sladkorja                    |
+| chlorides            | numerični | vsebnost kloridov                     |
+| free.sulfur.dioxide  | numerični | vsebnost prostega žveplovega dioksida |
+| total.sulfur.dioxide | numerični | celotna vsebnost žveplovega dioksida  |
+| density              | numerični | gostota vina                          |
+| pH                   | numerični | pH nivo vina                          |
+| sulphates            | numerični | vsebnost sulfatov                     |
+| alcohol              | numerični | odstotek alkohola                     |
+| quality              | numerični | ocenjena kvaliteta vina               |
+
+# Naloga 1.
+
+**Grafično prikažite porazdelitev spremenljivk kislost, sladkor ter celoten žveplov dioksid. Grafično prikažite še porazdelitev kvalitete vseh vin. Narišite še histograme, ki prikazujo porazdelitev kislosti glede na kvaliteto vina. Interpretirajte rezultate.**
+
+## Opis problema
+
+V prvi nalogi se osredotočamo na raziskovanje porazdelitve nekaterih kemijskih lastnosti rdečega vina - kislost vina, vsebnost sladkorja ter celotna vsebnost žveplovega dioksida. 
+Predstavljene so tudi porazdelitve kvalitet vseh ocenjenih vin, preko česar bomo lahko dobili idejo, kako vplivajo te lastnosti na njihovo kakovost.
+
+## Opis uporabljenih statističnih metod
+
+Porazdelitve podatkov so predstavljene s histogrami. Za boljšo oceno števila intervalov/razredov sem uporabil Sturges pravilo, ki se poenostavi v formulo $k = 1 + \log_2(n)$, kjer je $k$ število intervalov in $n$ skupno število elementov. Znotraj vsakega histograma je prikazana tudi porazdelitev ocen vina znotraj dane spremenljivke.
+
+V pomoč sem si ustvaril funkcijo `quality_histogram`, ki prikaže podano spremenljivko `col` iz podatkovnega okvirja `df` s histogramom. Za število razredov uporabi vrednost `bins_ocena`, izračunano s Sturgesovim pravilom. Kot `fill` parameter vzame `quality_factor`, kjer so vrednosti spremenljivke `quality`.
+
+```{r}
+#| cache: true
+n <- nrow(df)
+bins_ocena <- floor(1 + log2(n))
+quality_factor <- factor(df$quality)
+
+quality_histogram <- function(df, col) {
+  ggplot(df, aes(x = unlist(select(df, all_of(col))), fill = quality_factor)) +
+    geom_histogram(bins = bins_ocena) +
+    labs(
+      title = paste("Porazdelitev", col, "glede na oceno"),
+      x = gsub(pattern = "\\.", replacement = " ", x = col),
+      y = "frekvenca",
+      fill = "ocena"
+    ) +
+      scale_fill_brewer(palette = "PuRd")
+}
+```
+
+Za vsako spremenljivko sem podal tudi ustrezne mere centralne tendence, primerne za tip porazdelitve (bodisi simetrična ali asimetrična).
+
+## Rezultati in njihova interpretacija
+
+### Porazdelitev ocen vina
+
+```{r}
+#| code-fold: true
+#| code-summary: graf
+ggplot(df, aes(x = quality)) +
+  geom_bar() +
+  labs(
+    title = "Porazdelitev ocen",
+    x = "ocena",
+    y = "frekvenca"
+  )
+```
+
+Porazdelitev ocen je precej simetrična, kar pomeni, da ni (veliko) osamelcev. Zaradi tega je primerno podati *mere centralne tendence* - artimetična sredina, modus in standardni odklon.
+
+```{r}
+#| code-fold: true
+#| code-summary: povzetek podatkov o ocenah
+select(df, quality) |> 
+  summarise(
+    "modus" = names(which.max(table(quality_factor))),
+    "aritmetična sredina" = mean(quality),
+    "standardni odklon" = sd(quality),
+  ) |> 
+    knitr::kable()
+```
+
+Najbolj pogosta ocena je 5, razpršenost podatkov pa je tudi precej majhna.
+
+### Kislost vina
+
+Iz histogramov lahko ocenimo porazdelitev spremenljivk. Opazno je, da je za spremenljivko `fixed.acidity` (kislost vina) porazdelitev nekoliko asimetrična desno. Prav tako je vidno tudi, da so ocene kvalitete vine spremenljivke `quality` podobno porazdeljene.
+
+```{r}
+#| code-fold: true
+#| code-summary: graf
+quality_histogram(df, "fixed.acidity")
+```
+
+Zaradi asimetrične porazdelitve so primerne statistične mere *mere variabilnosti* - mediana, interkvartilni razmik ter prvi in tretji kvartil, saj so bolj robustne in neobčutljive na osamlece, ki so razlog za asimetrične porazdelitve.
+
+```{r}
+#| code-fold: true
+#| code-summary: povzetek podatkov kislosti vina glede na oceno
+select(df, quality, fixed.acidity) |> 
+  group_by(quality) |> 
+  summarise(
+    "1. kvartil" = quantile(fixed.acidity, 0.25),
+    "mediana" = median(fixed.acidity),
+    "3. kvartil" = quantile(fixed.acidity, 0.75),
+    "IQR" = IQR(fixed.acidity)
+  ) |> 
+    rename(ocena = quality) |> 
+    knitr::kable()
+```
+
+Opazno je, da se z večjo oceno poveča tudi mediana, kar lahko implicira na korelacijo med oceno in kislostjo vina. ***dodaj nek reference kako je kislost pomebna za kakovost vina***.
+
+Prav tako je opazno, da se interkvartilni razmik (IQR) veča z oceno. To pomeni, da je razpon kislosti vin pri večjih ocenah večji. Vina z višjo oceno imajo večjo variabilnost v smislu kislosti. To lahko pomeni, da so vina z višjo oceno bolj kompleksna in imajo širši spekter okusov, vključno z različnimi nivoji kislosti.
+
+### Vsebnost sladkorja
+
+```{r}
+#| code-fold: true
+#| code-summary: graf
+quality_histogram(df, "residual.sugar")
+```
+
+### Celotna vsebnost žveplovega dioksida
+
+```{r}
+#| code-fold: true
+#| code-summary: graf
+quality_histogram(df, "total.sulfur.dioxide")
+```
+
+# Naloga 2.
+
+**Izpišite kvartile in standardni odklon za spremenljivko “kislost” ter narišite okvir z ročaji. Enako naredite še za spremenljivki “sladkor” in “celoten žveplov dioksid”. Interpetirajte rezultate.**
+
+# Naloga 3.
+
+**Zanima nas, ali je povprečna kislost vin, ki so dobila oceno 5, višja kot povprečne kislosti vin z oceno 6. Katerega od statističnih testov bi uporabili in kakšen je vaš zaključek? Z ustreznim statističnim testom preverite še hipotezo, da je povprečna vsebnost sladkorja vseh izbranih vin večja od 2,3. Interpretirajte rezultate.**
+
+# Naloga 4.
+
+**Za vsako od dvanajstih zgoraj omenjenih spremenljivk preverite, ali so podatki skladni z normalno porazdelitvijo. Če da, podajte parametre teh porazdelitev.**
+
+# Naloga 5.
+
+**Po lastni izbiri postavite vsaj še eno raziskovalno vprašanje in nanj natančno odgovorite.**

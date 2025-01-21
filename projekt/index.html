@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Jan Panjan">
-<meta name="dcterms.date" content="2024-07-01">
+<meta name="dcterms.date" content="2025-09-01">
 
-<title>index</title>
+<title>Domača naloga - Rdeče vino</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -70,6 +70,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="index_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -81,6 +110,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
+<h1 class="title">Domača naloga - Rdeče vino</h1>
 <p class="subtitle lead">Statistika 2024/25</p>
 </div>
 
@@ -98,7 +128,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">July 1, 2024</p>
+      <p class="date">September 1, 2025</p>
     </div>
   </div>
   
@@ -110,127 +140,620 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<section id="uvod" class="level1">
+<h1>Uvod</h1>
+<p>Kvaliteta vina je odvisna od številnih dejavnikov, od sort grozdja z različnimi lastnostmi, do vinarskih postokov uporabljenih za njegovo predelovanje. Analiza kakovosti vina je pomembna tako za potrošnike, saj jim tako pomaga pri izbiri vina ter pri proizvjalacih, ki lahko na podlagi rezultatov analiz ugotovijo, katere tehnike pridelovanja, sorte grozdja in podobno vpliva na kakovost vina.</p>
+<p>V tem poročilu so predstavljene statistične analize podatkov kakovosti rdečega vina. Namen naloge je pripraviti poročilo, ki poda odgovore na vseh 5 zastavljenih vprašanj, ki se osredotočajo na kemijse lastnosti in njihov vpliv na kakovost vina. Uporabljati je bilo potrebno program R. Pri vsakem vprašanju je podan opis problema, opis uporabljenih statističnih metod za analizo problema ter rezultati analize in njihova interpretacija.</p>
+</section>
+<section id="podatki" class="level1">
+<h1>Podatki</h1>
+<section id="uporabljeni-paketi" class="level2">
+<h2 class="anchored" data-anchor-id="uporabljeni-paketi">Uporabljeni paketi</h2>
+<p>Za delo s podatki sem uporabljal paket <code>tidyverse</code>, ki je ustvarjen za delo s podatkovnimi okvirji ter <code>ggplot2</code> in <code>gridExtra</code> za kvalitetne vizualne predstavitve distiliranih podatkov.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'tidyverse' was built under R version 4.3.3</code></pre>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'ggplot2' was built under R version 4.3.3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'tibble' was built under R version 4.3.3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'tidyr' was built under R version 4.3.3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'readr' was built under R version 4.3.3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'purrr' was built under R version 4.3.3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'dplyr' was built under R version 4.3.3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'stringr' was built under R version 4.3.3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'forcats' was built under R version 4.3.3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'lubridate' was built under R version 4.3.3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-✔ dplyr     1.1.4     ✔ readr     2.1.5
-✔ forcats   1.0.0     ✔ stringr   1.5.1
-✔ ggplot2   3.5.0     ✔ tibble    3.2.1
-✔ lubridate 1.9.3     ✔ tidyr     1.3.1
-✔ purrr     1.0.2     
-── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-✖ dplyr::filter() masks stats::filter()
-✖ dplyr::lag()    masks stats::lag()
-ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>read data</p>
+</section>
+<section id="branje-podatkov" class="level2">
+<h2 class="anchored" data-anchor-id="branje-podatkov">Branje podatkov</h2>
+<p>Podatki so shranjeni tako v <code>csv</code> kot v <code>xlsx</code> obliki. Odločil sem se, da bom uporabil podatke iz <code>csv</code> datoteke, saj za branje ni potrebna uporaba dodatnih paketov.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="st">"winequality-red.csv"</span> <span class="sc">|&gt;</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">read.csv</span>(<span class="at">sep =</span> <span class="st">";"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as_tibble</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="st">"winequality-red.csv"</span> <span class="sc">|&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">read.csv</span>(<span class="at">sep =</span> <span class="st">";"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as_tibble</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>porazdelitve kislost, sladkor, celoten zveplov dioksid, kvaliteta</p>
+</section>
+<section id="predstavitev-podatkov" class="level2">
+<h2 class="anchored" data-anchor-id="predstavitev-podatkov">Predstavitev podatkov</h2>
+<p>Podatkovni okvir vsebuje različne kemijske lastnosti vin ter končno oceno kakovosti ocenjevalcev vina. Sestavljen je iz 1599 vrstic z 12 numeričnimi spremenljivkami.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(df<span class="sc">$</span>fixed.acidity)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold">
+<summary>manjkajoče vrednosti</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map_df</span>(df, \(col){</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">is.na</span>(col) <span class="sc">|&gt;</span> </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">grep</span>(<span class="at">pattern =</span> <span class="st">"TRUE"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">length</span>()</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">|&gt;</span> </span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">everything</span>(df)) <span class="sc">%&gt;%</span> {</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">names</span>(.) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"spremenljivka"</span>, <span class="st">"manjkajoče_vrednosti"</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    .</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 2
+   spremenljivka        manjkajoče_vrednosti
+   &lt;chr&gt;                               &lt;int&gt;
+ 1 fixed.acidity                           0
+ 2 volatile.acidity                        0
+ 3 citric.acid                             0
+ 4 residual.sugar                          0
+ 5 chlorides                               0
+ 6 free.sulfur.dioxide                     0
+ 7 total.sulfur.dioxide                    0
+ 8 density                                 0
+ 9 pH                                      0
+10 sulphates                               0
+11 alcohol                                 0
+12 quality                                 0</code></pre>
+</div>
+</div>
+<p>Podatki so že očiščeni, zato dodatno delo ni potrebno.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>naključni vzorec velikosti 5</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">|&gt;</span> <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">5</span>) <span class="sc">|&gt;</span> knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(df<span class="sc">$</span>residual.sugar)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-3-2.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(df<span class="sc">$</span>total.sulfur.dioxide)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-3-3.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(df<span class="sc">$</span>quality)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-3-4.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
+<table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 11%">
+<col style="width: 8%">
+<col style="width: 10%">
+<col style="width: 6%">
+<col style="width: 13%">
+<col style="width: 14%">
+<col style="width: 5%">
+<col style="width: 3%">
+<col style="width: 6%">
+<col style="width: 5%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">fixed.acidity</th>
+<th style="text-align: right;">volatile.acidity</th>
+<th style="text-align: right;">citric.acid</th>
+<th style="text-align: right;">residual.sugar</th>
+<th style="text-align: right;">chlorides</th>
+<th style="text-align: right;">free.sulfur.dioxide</th>
+<th style="text-align: right;">total.sulfur.dioxide</th>
+<th style="text-align: right;">density</th>
+<th style="text-align: right;">pH</th>
+<th style="text-align: right;">sulphates</th>
+<th style="text-align: right;">alcohol</th>
+<th style="text-align: right;">quality</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">7.1</td>
+<td style="text-align: right;">0.350</td>
+<td style="text-align: right;">0.29</td>
+<td style="text-align: right;">2.5</td>
+<td style="text-align: right;">0.096</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">0.99620</td>
+<td style="text-align: right;">3.42</td>
+<td style="text-align: right;">0.65</td>
+<td style="text-align: right;">11.0</td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6.6</td>
+<td style="text-align: right;">0.855</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">2.4</td>
+<td style="text-align: right;">0.062</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">0.99627</td>
+<td style="text-align: right;">3.54</td>
+<td style="text-align: right;">0.60</td>
+<td style="text-align: right;">11.0</td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7.8</td>
+<td style="text-align: right;">0.520</td>
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">1.9</td>
+<td style="text-align: right;">0.081</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;">0.99840</td>
+<td style="text-align: right;">3.43</td>
+<td style="text-align: right;">0.65</td>
+<td style="text-align: right;">9.0</td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">11.9</td>
+<td style="text-align: right;">0.430</td>
+<td style="text-align: right;">0.66</td>
+<td style="text-align: right;">3.1</td>
+<td style="text-align: right;">0.109</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">1.00000</td>
+<td style="text-align: right;">3.15</td>
+<td style="text-align: right;">0.85</td>
+<td style="text-align: right;">10.4</td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7.1</td>
+<td style="text-align: right;">0.590</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">2.2</td>
+<td style="text-align: right;">0.078</td>
+<td style="text-align: right;">26</td>
+<td style="text-align: right;">44</td>
+<td style="text-align: right;">0.99522</td>
+<td style="text-align: right;">3.42</td>
+<td style="text-align: right;">0.68</td>
+<td style="text-align: right;">10.8</td>
+<td style="text-align: right;">6</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> fixed.acidity)) <span class="sc">+</span> <span class="fu">geom_bar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold">
+<summary>povzetek podatkov</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(df[<span class="fu">names</span>(df)], summary) <span class="sc">|&gt;</span> knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 8%">
+<col style="width: 10%">
+<col style="width: 7%">
+<col style="width: 9%">
+<col style="width: 6%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 6%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 5%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">fixed.acidity</th>
+<th style="text-align: right;">volatile.acidity</th>
+<th style="text-align: right;">citric.acid</th>
+<th style="text-align: right;">residual.sugar</th>
+<th style="text-align: right;">chlorides</th>
+<th style="text-align: right;">free.sulfur.dioxide</th>
+<th style="text-align: right;">total.sulfur.dioxide</th>
+<th style="text-align: right;">density</th>
+<th style="text-align: right;">pH</th>
+<th style="text-align: right;">sulphates</th>
+<th style="text-align: right;">alcohol</th>
+<th style="text-align: right;">quality</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Min.</td>
+<td style="text-align: right;">4.600000</td>
+<td style="text-align: right;">0.1200000</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.900000</td>
+<td style="text-align: right;">0.0120000</td>
+<td style="text-align: right;">1.00000</td>
+<td style="text-align: right;">6.00000</td>
+<td style="text-align: right;">0.9900700</td>
+<td style="text-align: right;">2.740000</td>
+<td style="text-align: right;">0.3300000</td>
+<td style="text-align: right;">8.40000</td>
+<td style="text-align: right;">3.000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1st Qu.</td>
+<td style="text-align: right;">7.100000</td>
+<td style="text-align: right;">0.3900000</td>
+<td style="text-align: right;">0.0900000</td>
+<td style="text-align: right;">1.900000</td>
+<td style="text-align: right;">0.0700000</td>
+<td style="text-align: right;">7.00000</td>
+<td style="text-align: right;">22.00000</td>
+<td style="text-align: right;">0.9956000</td>
+<td style="text-align: right;">3.210000</td>
+<td style="text-align: right;">0.5500000</td>
+<td style="text-align: right;">9.50000</td>
+<td style="text-align: right;">5.000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Median</td>
+<td style="text-align: right;">7.900000</td>
+<td style="text-align: right;">0.5200000</td>
+<td style="text-align: right;">0.2600000</td>
+<td style="text-align: right;">2.200000</td>
+<td style="text-align: right;">0.0790000</td>
+<td style="text-align: right;">14.00000</td>
+<td style="text-align: right;">38.00000</td>
+<td style="text-align: right;">0.9967500</td>
+<td style="text-align: right;">3.310000</td>
+<td style="text-align: right;">0.6200000</td>
+<td style="text-align: right;">10.20000</td>
+<td style="text-align: right;">6.000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Mean</td>
+<td style="text-align: right;">8.319637</td>
+<td style="text-align: right;">0.5278205</td>
+<td style="text-align: right;">0.2709756</td>
+<td style="text-align: right;">2.538806</td>
+<td style="text-align: right;">0.0874665</td>
+<td style="text-align: right;">15.87492</td>
+<td style="text-align: right;">46.46779</td>
+<td style="text-align: right;">0.9967467</td>
+<td style="text-align: right;">3.311113</td>
+<td style="text-align: right;">0.6581488</td>
+<td style="text-align: right;">10.42298</td>
+<td style="text-align: right;">5.636023</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">3rd Qu.</td>
+<td style="text-align: right;">9.200000</td>
+<td style="text-align: right;">0.6400000</td>
+<td style="text-align: right;">0.4200000</td>
+<td style="text-align: right;">2.600000</td>
+<td style="text-align: right;">0.0900000</td>
+<td style="text-align: right;">21.00000</td>
+<td style="text-align: right;">62.00000</td>
+<td style="text-align: right;">0.9978350</td>
+<td style="text-align: right;">3.400000</td>
+<td style="text-align: right;">0.7300000</td>
+<td style="text-align: right;">11.10000</td>
+<td style="text-align: right;">6.000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Max.</td>
+<td style="text-align: right;">15.900000</td>
+<td style="text-align: right;">1.5800000</td>
+<td style="text-align: right;">1.0000000</td>
+<td style="text-align: right;">15.500000</td>
+<td style="text-align: right;">0.6110000</td>
+<td style="text-align: right;">72.00000</td>
+<td style="text-align: right;">289.00000</td>
+<td style="text-align: right;">1.0036900</td>
+<td style="text-align: right;">4.010000</td>
+<td style="text-align: right;">2.0000000</td>
+<td style="text-align: right;">14.90000</td>
+<td style="text-align: right;">8.000000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><br></p>
+<p>Lahko opazimo, da se pojavijo samo ocene med 3 in 8 ter da je povprečna ocena <span class="math inline">\(\approx 5.5\)</span>. Spodaj je opis vseh spremenljivk.</p>
+<table class="table">
+<colgroup>
+<col style="width: 30%">
+<col style="width: 15%">
+<col style="width: 54%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>spremenljivka</th>
+<th>tip</th>
+<th>opis</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>fixed.acidity</td>
+<td>numerični</td>
+<td>kislost vina</td>
+</tr>
+<tr class="even">
+<td>volatile.acidity</td>
+<td>numerični</td>
+<td>hlapna kislost vina</td>
+</tr>
+<tr class="odd">
+<td>citric.acid</td>
+<td>numerični</td>
+<td>vsebnost citronske kisline</td>
+</tr>
+<tr class="even">
+<td>residual.sugar</td>
+<td>numerični</td>
+<td>vsebnost sladkorja</td>
+</tr>
+<tr class="odd">
+<td>chlorides</td>
+<td>numerični</td>
+<td>vsebnost kloridov</td>
+</tr>
+<tr class="even">
+<td>free.sulfur.dioxide</td>
+<td>numerični</td>
+<td>vsebnost prostega žveplovega dioksida</td>
+</tr>
+<tr class="odd">
+<td>total.sulfur.dioxide</td>
+<td>numerični</td>
+<td>celotna vsebnost žveplovega dioksida</td>
+</tr>
+<tr class="even">
+<td>density</td>
+<td>numerični</td>
+<td>gostota vina</td>
+</tr>
+<tr class="odd">
+<td>pH</td>
+<td>numerični</td>
+<td>pH nivo vina</td>
+</tr>
+<tr class="even">
+<td>sulphates</td>
+<td>numerični</td>
+<td>vsebnost sulfatov</td>
+</tr>
+<tr class="odd">
+<td>alcohol</td>
+<td>numerični</td>
+<td>odstotek alkohola</td>
+</tr>
+<tr class="even">
+<td>quality</td>
+<td>numerični</td>
+<td>ocenjena kvaliteta vina</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="naloga-1." class="level1">
+<h1>Naloga 1.</h1>
+<p><strong>Grafično prikažite porazdelitev spremenljivk kislost, sladkor ter celoten žveplov dioksid. Grafično prikažite še porazdelitev kvalitete vseh vin. Narišite še histograme, ki prikazujo porazdelitev kislosti glede na kvaliteto vina. Interpretirajte rezultate.</strong></p>
+<section id="opis-problema" class="level2">
+<h2 class="anchored" data-anchor-id="opis-problema">Opis problema</h2>
+<p>V prvi nalogi se osredotočamo na raziskovanje porazdelitve nekaterih kemijskih lastnosti rdečega vina - kislost vina, vsebnost sladkorja ter celotna vsebnost žveplovega dioksida. Predstavljene so tudi porazdelitve kvalitet vseh ocenjenih vin, preko česar bomo lahko dobili idejo, kako vplivajo te lastnosti na njihovo kakovost.</p>
+</section>
+<section id="opis-uporabljenih-statističnih-metod" class="level2">
+<h2 class="anchored" data-anchor-id="opis-uporabljenih-statističnih-metod">Opis uporabljenih statističnih metod</h2>
+<p>Porazdelitve podatkov so predstavljene s histogrami. Za boljšo oceno števila intervalov/razredov sem uporabil Sturges pravilo, ki se poenostavi v formulo <span class="math inline">\(k = 1 + \log_2(n)\)</span>, kjer je <span class="math inline">\(k\)</span> število intervalov in <span class="math inline">\(n\)</span> skupno število elementov. Znotraj vsakega histograma je prikazana tudi porazdelitev ocen vina znotraj dane spremenljivke.</p>
+<p>V pomoč sem si ustvaril funkcijo <code>quality_histogram</code>, ki prikaže podano spremenljivko <code>col</code> iz podatkovnega okvirja <code>df</code> s histogramom. Za število razredov uporabi vrednost <code>bins_ocena</code>, izračunano s Sturgesovim pravilom. Kot <code>fill</code> parameter vzame <code>quality_factor</code>, kjer so vrednosti spremenljivke <code>quality</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(df)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>bins_ocena <span class="ot">&lt;-</span> <span class="fu">floor</span>(<span class="dv">1</span> <span class="sc">+</span> <span class="fu">log2</span>(n))</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>quality_factor <span class="ot">&lt;-</span> <span class="fu">factor</span>(df<span class="sc">$</span>quality)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>quality_histogram <span class="ot">&lt;-</span> <span class="cf">function</span>(df, col) {</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">unlist</span>(<span class="fu">select</span>(df, <span class="fu">all_of</span>(col))), <span class="at">fill =</span> quality_factor)) <span class="sc">+</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">bins =</span> bins_ocena) <span class="sc">+</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Porazdelitev"</span>, col, <span class="st">"glede na oceno"</span>),</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="fu">gsub</span>(<span class="at">pattern =</span> <span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, <span class="at">replacement =</span> <span class="st">" "</span>, <span class="at">x =</span> col),</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="st">"frekvenca"</span>,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">fill =</span> <span class="st">"ocena"</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"PuRd"</span>)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Za vsako spremenljivko sem podal tudi ustrezne mere centralne tendence, primerne za tip porazdelitve (bodisi simetrična ali asimetrična).</p>
+</section>
+<section id="rezultati-in-njihova-interpretacija" class="level2">
+<h2 class="anchored" data-anchor-id="rezultati-in-njihova-interpretacija">Rezultati in njihova interpretacija</h2>
+<section id="porazdelitev-ocen-vina" class="level3">
+<h3 class="anchored" data-anchor-id="porazdelitev-ocen-vina">Porazdelitev ocen vina</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>graf</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> quality)) <span class="sc">+</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Porazdelitev ocen"</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"ocena"</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"frekvenca"</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> residual.sugar)) <span class="sc">+</span> <span class="fu">geom_bar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Porazdelitev ocen je precej simetrična, kar pomeni, da ni (veliko) osamelcev. Zaradi tega je primerno podati <em>mere centralne tendence</em> - artimetična sredina, modus in standardni odklon.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>povzetek podatkov o ocenah</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">select</span>(df, quality) <span class="sc">|&gt;</span> </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"modus"</span> <span class="ot">=</span> <span class="fu">names</span>(<span class="fu">which.max</span>(<span class="fu">table</span>(quality_factor))),</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"aritmetična sredina"</span> <span class="ot">=</span> <span class="fu">mean</span>(quality),</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"standardni odklon"</span> <span class="ot">=</span> <span class="fu">sd</span>(quality),</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">modus</th>
+<th style="text-align: right;">aritmetična sredina</th>
+<th style="text-align: right;">standardni odklon</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">5</td>
+<td style="text-align: right;">5.636023</td>
+<td style="text-align: right;">0.8075694</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Najbolj pogosta ocena je 5, razpršenost podatkov pa je tudi precej majhna.</p>
+</section>
+<section id="kislost-vina" class="level3">
+<h3 class="anchored" data-anchor-id="kislost-vina">Kislost vina</h3>
+<p>Iz histogramov lahko ocenimo porazdelitev spremenljivk. Opazno je, da je za spremenljivko <code>fixed.acidity</code> (kislost vina) porazdelitev nekoliko asimetrična desno. Prav tako je vidno tudi, da so ocene kvalitete vine spremenljivke <code>quality</code> podobno porazdeljene.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>graf</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quality_histogram</span>(df, <span class="st">"fixed.acidity"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-4-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> total.sulfur.dioxide)) <span class="sc">+</span> <span class="fu">geom_bar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Zaradi asimetrične porazdelitve so primerne statistične mere <em>mere variabilnosti</em> - mediana, interkvartilni razmik ter prvi in tretji kvartil, saj so bolj robustne in neobčutljive na osamlece, ki so razlog za asimetrične porazdelitve.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>povzetek podatkov kislosti vina glede na oceno</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">select</span>(df, quality, fixed.acidity) <span class="sc">|&gt;</span> </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(quality) <span class="sc">|&gt;</span> </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"1. kvartil"</span> <span class="ot">=</span> <span class="fu">quantile</span>(fixed.acidity, <span class="fl">0.25</span>),</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mediana"</span> <span class="ot">=</span> <span class="fu">median</span>(fixed.acidity),</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"3. kvartil"</span> <span class="ot">=</span> <span class="fu">quantile</span>(fixed.acidity, <span class="fl">0.75</span>),</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"IQR"</span> <span class="ot">=</span> <span class="fu">IQR</span>(fixed.acidity)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">ocena =</span> quality) <span class="sc">|&gt;</span> </span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: right;">ocena</th>
+<th style="text-align: right;">1. kvartil</th>
+<th style="text-align: right;">mediana</th>
+<th style="text-align: right;">3. kvartil</th>
+<th style="text-align: right;">IQR</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">7.15</td>
+<td style="text-align: right;">7.50</td>
+<td style="text-align: right;">9.875</td>
+<td style="text-align: right;">2.725</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">6.80</td>
+<td style="text-align: right;">7.50</td>
+<td style="text-align: right;">8.400</td>
+<td style="text-align: right;">1.600</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">7.10</td>
+<td style="text-align: right;">7.80</td>
+<td style="text-align: right;">8.900</td>
+<td style="text-align: right;">1.800</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">7.00</td>
+<td style="text-align: right;">7.90</td>
+<td style="text-align: right;">9.400</td>
+<td style="text-align: right;">2.400</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">7.40</td>
+<td style="text-align: right;">8.80</td>
+<td style="text-align: right;">10.100</td>
+<td style="text-align: right;">2.700</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">7.25</td>
+<td style="text-align: right;">8.25</td>
+<td style="text-align: right;">10.225</td>
+<td style="text-align: right;">2.975</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Opazno je, da se z večjo oceno poveča tudi mediana, kar lahko implicira na korelacijo med oceno in kislostjo vina. <strong><em>dodaj nek reference kako je kislost pomebna za kakovost vina</em></strong>.</p>
+<p>Prav tako je opazno, da se interkvartilni razmik (IQR) veča z oceno. To pomeni, da je razpon kislosti vin pri večjih ocenah večji. Vina z višjo oceno imajo večjo variabilnost v smislu kislosti. To lahko pomeni, da so vina z višjo oceno bolj kompleksna in imajo širši spekter okusov, vključno z različnimi nivoji kislosti.</p>
+</section>
+<section id="vsebnost-sladkorja" class="level3">
+<h3 class="anchored" data-anchor-id="vsebnost-sladkorja">Vsebnost sladkorja</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>graf</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quality_histogram</span>(df, <span class="st">"residual.sugar"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-4-3.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> quality)) <span class="sc">+</span> <span class="fu">geom_bar</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="celotna-vsebnost-žveplovega-dioksida" class="level3">
+<h3 class="anchored" data-anchor-id="celotna-vsebnost-žveplovega-dioksida">Celotna vsebnost žveplovega dioksida</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>graf</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">quality_histogram</span>(df, <span class="st">"total.sulfur.dioxide"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-4-4.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
+</section>
+</section>
+</section>
+<section id="naloga-2." class="level1">
+<h1>Naloga 2.</h1>
+<p><strong>Izpišite kvartile in standardni odklon za spremenljivko “kislost” ter narišite okvir z ročaji. Enako naredite še za spremenljivki “sladkor” in “celoten žveplov dioksid”. Interpetirajte rezultate.</strong></p>
+</section>
+<section id="naloga-3." class="level1">
+<h1>Naloga 3.</h1>
+<p><strong>Zanima nas, ali je povprečna kislost vin, ki so dobila oceno 5, višja kot povprečne kislosti vin z oceno 6. Katerega od statističnih testov bi uporabili in kakšen je vaš zaključek? Z ustreznim statističnim testom preverite še hipotezo, da je povprečna vsebnost sladkorja vseh izbranih vin večja od 2,3. Interpretirajte rezultate.</strong></p>
+</section>
+<section id="naloga-4." class="level1">
+<h1>Naloga 4.</h1>
+<p><strong>Za vsako od dvanajstih zgoraj omenjenih spremenljivk preverite, ali so podatki skladni z normalno porazdelitvijo. Če da, podajte parametre teh porazdelitev.</strong></p>
+</section>
+<section id="naloga-5." class="level1">
+<h1>Naloga 5.</h1>
+<p><strong>Po lastni izbiri postavite vsaj še eno raziskovalno vprašanje in nanj natančno odgovorite.</strong></p>
+</section>
 
 </main>
 <!-- /main column -->
