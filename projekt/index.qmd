@@ -5,12 +5,12 @@ subtitle: "Statistika 2024/25"
 date: "21/01/2024"
 format:	
   html:
+    theme: flatly
     monofont: JetBrains Mono
-    them: flatly
+    toc: true
+    toc-fold: true
 execute:
   warning: false
-  toc: true
-  toc-fold: true
 ---
 
 # Uvod
@@ -56,7 +56,7 @@ map_df(df, \(col){
     length()
 }) |> 
   pivot_longer(cols = everything(df)) %>% {
-    names(.) <- c("spremenljivka", "manjkajoče_vrednosti")
+    names(.) <- c("spremenljivka", "NA")
     .
   }
 ```
@@ -117,7 +117,11 @@ V pomoč sem si ustvaril funkcijo `quality_histogram`, ki prikaže podano spreme
 n <- nrow(df)
 bins_ocena <- floor(1 + log2(n))
 quality_factor <- factor(df$quality)
+```
 
+```{r}
+#| code-fold: true
+#| code-summary: quality_histogram
 quality_histogram <- function(df, col) {
   ggplot(df, aes(x = unlist(select(df, all_of(col))), fill = quality_factor)) +
     geom_histogram(bins = bins_ocena) +
@@ -127,7 +131,45 @@ quality_histogram <- function(df, col) {
       y = "frekvenca",
       fill = "ocena"
     ) +
-      scale_fill_brewer(palette = "PuRd")
+      scale_fill_brewer(palette = "PuRd") +
+      theme_classic()
+}
+```
+
+Prav tako sem ustvaril tri funckije, s katerimi bom predstavil mere centralne tendence ali mere variabilnosti neke spremenljivke glede na njeno simetrično ali asimetrično porazdelitev.
+
+```{r}
+#| code-fold: true
+#| code-summary: asim_summary
+asim_summary <- function(df, col) {
+  selected <- select(df, all_of(col))
+  unpacked <- unlist(selected)
+
+  selected |> summarise(
+    "min" = min(unpacked),
+    "1. kvartil" = quantile(unpacked, 0.25),
+    "mediana" = median(unpacked),
+    "3. kvartil" = quantile(unpacked, 0.75),
+    "IQR" = IQR(unpacked),
+    "max" = max(unpacked),
+  ) |> 
+  knitr::kable()
+}
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: sim_summary
+sim_summary <- function(df, col) {
+  selected <- select(df, all_of(col))
+  unpacked <- unlist(selected)
+
+  selected |> summarise(
+    "modus" = names(which.max(table(factor(unpacked)))),
+    "aritmetična sredina" = mean(unlist(unpacked)),
+    "standardni odklon" = sd(unlist(unpacked)),
+  ) |> 
+    knitr::kable()
 }
 ```
 
@@ -146,28 +188,21 @@ ggplot(df, aes(x = quality)) +
     title = "Porazdelitev ocen",
     x = "ocena",
     y = "frekvenca"
-  )
+  ) + 
+    theme_classic()
 ```
 
-Porazdelitev ocen je precej simetrična, kar pomeni, da ni (veliko) osamelcev. Zaradi tega je primerno podati *mere centralne tendence* - artimetična sredina, modus in standardni odklon.
+Porazdelitev ocen je precej **simetrična**, kar pomeni, da ni (veliko) osamelcev. Zaradi tega je primerno podati *mere centralne tendence* - artimetična sredina, modus in standardni odklon.
 
 ```{r}
-#| code-fold: true
-#| code-summary: povzetek podatkov o ocenah
-select(df, quality) |> 
-  summarise(
-    "modus" = names(which.max(table(quality_factor))),
-    "aritmetična sredina" = mean(quality),
-    "standardni odklon" = sd(quality),
-  ) |> 
-    knitr::kable()
+sim_summary(df, "quality")
 ```
 
 Najbolj pogosta ocena je 5, razpršenost podatkov pa je tudi precej majhna.
 
 ### Kislost vina
 
-Iz histogramov lahko ocenimo porazdelitev spremenljivk. Opazno je, da je za spremenljivko `fixed.acidity` (kislost vina) porazdelitev nekoliko asimetrična desno. Prav tako je vidno tudi, da so ocene kvalitete vine spremenljivke `quality` podobno porazdeljene.
+Opazno je, da je za spremenljivko `fixed.acidity` (kislost vina) porazdelitev nekoliko asimetrična desno.
 
 ```{r}
 #| code-fold: true
@@ -175,11 +210,19 @@ Iz histogramov lahko ocenimo porazdelitev spremenljivk. Opazno je, da je za spre
 quality_histogram(df, "fixed.acidity")
 ```
 
-Zaradi asimetrične porazdelitve so primerne statistične mere *mere variabilnosti* - mediana, interkvartilni razmik ter prvi in tretji kvartil, saj so bolj robustne in neobčutljive na osamlece, ki so razlog za asimetrične porazdelitve.
+Zaradi asimetrične porazdelitve so primerne statistične mere *mere variabilnosti* - mediana, interkvartilni razmik ter prvi in tretji kvartil, saj so bolj robustne in neobčutljive na osamelce, ki so razlog za asimetrične porazdelitve.
+
+```{r}
+asim_summary(df, "fixed.acidity")
+```
+
+Opazno je, da se z večjo oceno poveča tudi mediana, kar lahko implicira na korelacijo med oceno in kislostjo vina. ***dodaj nek reference kako je kislost pomebna za kakovost vina***.
+
+Iz spodnje tabele je opazno, da je ocene vin precej enakomerno porazdeljene. Višje ocene so malo bolj pogoste, kar lahko pomeni, da so proizvajalci imeli dobro letino. 
 
 ```{r}
 #| code-fold: true
-#| code-summary: povzetek podatkov kislosti vina glede na oceno
+#| code-summary: povzetek podatkov kislosti vina glede na ocene
 select(df, quality, fixed.acidity) |> 
   group_by(quality) |> 
   summarise(
@@ -188,15 +231,19 @@ select(df, quality, fixed.acidity) |>
     "3. kvartil" = quantile(fixed.acidity, 0.75),
     "IQR" = IQR(fixed.acidity)
   ) |> 
-    rename(ocena = quality) |> 
-    knitr::kable()
+  rename(ocena = quality) |> 
+  knitr::kable()
 ```
 
-Opazno je, da se z večjo oceno poveča tudi mediana, kar lahko implicira na korelacijo med oceno in kislostjo vina. ***dodaj nek reference kako je kislost pomebna za kakovost vina***.
+Visoki IQR vrednosti za oceni 3 in 8 lahko pojasne majhna količina podatkov za ti oceni, 10 in 18 opažanj, kar je malo v primerjavi z ostalimi.
 
-Prav tako je opazno, da se interkvartilni razmik (IQR) veča z oceno. To pomeni, da je razpon kislosti vin pri večjih ocenah večji. Vina z višjo oceno imajo večjo variabilnost v smislu kislosti. To lahko pomeni, da so vina z višjo oceno bolj kompleksna in imajo širši spekter okusov, vključno z različnimi nivoji kislosti.
+```{r}
+quality_factor |> summary()
+```
 
 ### Vsebnost sladkorja
+
+Porazdelitev vsebnosti sladkorja je zelo asimetrična v desno. Večina vrednosti je med 0 in približno 5. ***To se sklada s podatki ki sem jih dobil na tej speltni strani o tem da mora met vino toliko sladkorja ker to pomeni da je ok al neki, najdi reference***.
 
 ```{r}
 #| code-fold: true
@@ -204,13 +251,67 @@ Prav tako je opazno, da se interkvartilni razmik (IQR) veča z oceno. To pomeni,
 quality_histogram(df, "residual.sugar")
 ```
 
+Tu so predstavljene mere variabilnosti za dano spremenljivko. Iz IQR vrednosti je res razvidno, da je večina podatkov skoncentriranih med 1. in 3. kvartilom, torej med $\approx 2$ in $2.5$.
+
+```{r}
+asim_summary(df, "residual.sugar")
+```
+
+To lahko pomeni, da višja koncentracija sladkorja v vinu ni pogosta, saj popači njegov okus. Glede na spodnjo tabelo je razvidno, da so ocene ponovno simetrično porazdeljene, vse z mediano približno $2.2$. Velika IQR vrednost za oceno 3 pa je verjetno spet odvisna od majhne količine podatkov z oceno 3.
+
+```{r}
+#| code-fold: true
+#| code-summary: povzetek podatkov vsebnosti sladkorja v vinu glede na ocene
+select(df, quality, residual.sugar) |> 
+  group_by(quality) |> 
+  summarise(
+    "1. kvartil" = quantile(residual.sugar, 0.25),
+    "mediana" = median(residual.sugar),
+    "3. kvartil" = quantile(residual.sugar, 0.75),
+    "IQR" = IQR(residual.sugar)
+  ) |> 
+  rename(ocena = quality) |> 
+  knitr::kable()
+```
+
 ### Celotna vsebnost žveplovega dioksida
+
+Spremenljivka celotne vsebnosti žveplovega dioksida je prav tako v desno asimetrično porazdeljena.
 
 ```{r}
 #| code-fold: true
 #| code-summary: graf
 quality_histogram(df, "total.sulfur.dioxide")
 ```
+
+Zaradi tega bom predstavil njene mere variabilnosti.
+
+```{r}
+asim_summary(df, "total.sulfur.dioxide")
+```
+
+Iz njih lahko razberemo, da ima večina vin celotno vsebnost žveplovega dioksida nekje med 22 in 62. Žal nimam enot, a lahko trdim, da to v primerjavi z največje izmerjeno vsebnostjo 289 ni precej velika vrednost.
+
+To lahko pomeni, da so vina s manjšo vsebnostjo žveplovega dioksida bolj razširjena ali pa imajo vina s manjšo vsebnostjo boljši okus in so zato bolj pogosta.
+
+```{r}
+#| code-fold: true
+#| code-summary: povzetek podatkov celotne vsebnosti žveplovega dioksida v vinu glede na ocene
+select(df, quality, total.sulfur.dioxide) |> 
+  group_by(quality) |> 
+  summarise(
+    "1. kvartil" = quantile(total.sulfur.dioxide, 0.25),
+    "mediana" = median(total.sulfur.dioxide),
+    "3. kvartil" = quantile(total.sulfur.dioxide, 0.75),
+    "IQR" = IQR(total.sulfur.dioxide)
+  ) |> 
+  rename(ocena = quality) |> 
+  knitr::kable()
+```
+
+Ocene so ponovno precej enakomerno porazdeljene glede na vrednosti spremenljivke. Malo več jih je skoncentriranih okoli srednjih vrednosti za oceno, 5 in 6, kar je razvidno iz mediane in IQR.
+
+***Morda so ugotovili optimalno vsebovanost žveplovega dioksida***
 
 # Naloga 2.
 
