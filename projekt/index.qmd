@@ -23,11 +23,11 @@ V tem poročilu so predstavljene statistične analize podatkov kakovosti rdečeg
 
 ## Uporabljeni paketi
 
-Za delo s podatki sem uporabljal paket `tidyverse`, ki je ustvarjen za delo s podatkovnimi okvirji ter `ggplot2` in `gridExtra` za kvalitetne vizualne predstavitve distiliranih podatkov.
+Za delo s podatki sem uporabljal paket `dplyr`, ki je ustvarjen za delo s podatkovnimi okvirji ter `ggplot2` in `gridExtra` za kvalitetne vizualne predstavitve *distiliranih* podatkov.
 
 ```{r}
 #| output: false
-library(tidyverse)
+library(dplyr)
 library(ggplot2)
 library(gridExtra)
 ```
@@ -44,7 +44,7 @@ df <- "winequality-red.csv" |>
 
 ## Predstavitev podatkov
 
-Podatkovni okvir vsebuje različne kemijske lastnosti vin ter končno oceno kakovosti ocenjevalcev vina. Sestavljen je iz 1599 vrstic z 12 numeričnimi spremenljivkami. 
+Podatkovni okvir vsebuje različne kemijske lastnosti vin ter končno oceno kakovosti ocenjevalcev vina. Sestavljen je iz 1599 vrstic z 12 numeričnimi spremenljivkami.
 
 ```{r}
 #| cache: true
@@ -79,8 +79,7 @@ sapply(df[names(df)], summary) |> knitr::kable()
 
 <br>
 
-Lahko opazimo, da se pojavijo samo ocene med 3 in 8 ter da je povprečna ocena $\approx 5.5$.
-Spodaj je opis vseh spremenljivk.
+Lahko opazimo, da se pojavijo samo ocene med 3 in 8 ter da je povprečna ocena $\approx 5.5$. Spodaj je opis vseh spremenljivk.
 
 | spremenljivka        | tip       | opis                                  |
 |----------------------|-----------|---------------------------------------|
@@ -99,12 +98,11 @@ Spodaj je opis vseh spremenljivk.
 
 # Naloga 1.
 
-**Grafično prikažite porazdelitev spremenljivk kislost, sladkor ter celoten žveplov dioksid. Grafično prikažite še porazdelitev kvalitete vseh vin. Narišite še histograme, ki prikazujo porazdelitev kislosti glede na kvaliteto vina. Interpretirajte rezultate.**
+***Grafično prikažite porazdelitev spremenljivk kislost, sladkor ter celoten žveplov dioksid. Grafično prikažite še porazdelitev kvalitete vseh vin. Narišite še histograme, ki prikazujo porazdelitev kislosti glede na kvaliteto vina. Interpretirajte rezultate.***
 
 ## Opis problema
 
-V prvi nalogi se osredotočamo na raziskovanje porazdelitve nekaterih kemijskih lastnosti rdečega vina - kislost vina, vsebnost sladkorja ter celotna vsebnost žveplovega dioksida. 
-Predstavljene so tudi porazdelitve kvalitet vseh ocenjenih vin, preko česar bomo lahko dobili idejo, kako vplivajo te lastnosti na njihovo kakovost.
+V prvi nalogi se osredotočamo na raziskovanje porazdelitve nekaterih kemijskih lastnosti rdečega vina - kislost vina, vsebnost sladkorja ter celotna vsebnost žveplovega dioksida. Predstavljene so tudi porazdelitve kvalitet vseh ocenjenih vin, preko česar bomo lahko dobili idejo, kako vplivajo te lastnosti na njihovo kakovost.
 
 ## Opis uporabljenih statističnih metod
 
@@ -113,30 +111,111 @@ Porazdelitve podatkov so predstavljene s histogrami. Za boljšo oceno števila i
 V pomoč sem si ustvaril funkcijo `quality_histogram`, ki prikaže podano spremenljivko `col` iz podatkovnega okvirja `df` s histogramom. Za število razredov uporabi vrednost `bins_ocena`, izračunano s Sturgesovim pravilom. Kot `fill` parameter vzame `quality_factor`, kjer so vrednosti spremenljivke `quality`.
 
 ```{r}
-#| cache: true
-n <- nrow(df)
-bins_ocena <- floor(1 + log2(n))
-quality_factor <- factor(df$quality)
-```
-
-```{r}
 #| code-fold: true
 #| code-summary: quality_histogram
 quality_histogram <- function(df, col) {
+  if (!("quality" %in% names(df))) {
+    message("couldn't find 'quality' column in df data frame.")
+    return(NA)
+  }
+
+  n <- nrow(df)
+  bins_ocena <- floor(1 + log2(n))
+  
+  quality_factor <- factor(unlist(select(df, quality)))
+  unpacked <- unlist(select(df, col))
+  col_name = gsub(pattern = "\\.", replacement = " ", x = col)
+
   ggplot(df, aes(x = unlist(select(df, all_of(col))), fill = quality_factor)) +
     geom_histogram(bins = bins_ocena) +
     labs(
-      title = paste("Porazdelitev", col, "glede na oceno"),
-      x = gsub(pattern = "\\.", replacement = " ", x = col),
+      title = paste("Porazdelitev", col_name, "glede na oceno"),
+      x = col_name,
       y = "frekvenca",
       fill = "ocena"
     ) +
-      scale_fill_brewer(palette = "PuRd") +
+      scale_fill_brewer(palette = "RdPu") +
       theme_classic()
 }
 ```
 
-Prav tako sem ustvaril tri funckije, s katerimi bom predstavil mere centralne tendence ali mere variabilnosti neke spremenljivke glede na njeno simetrično ali asimetrično porazdelitev.
+## Rezultati in njihova interpretacija
+
+### Porazdelitev ocen vina
+
+```{r}
+#| code-fold: true
+#| code-summary: graf
+ggplot(df, aes(quality)) +
+  geom_bar() +
+  labs(
+    title = "Porazdelitev ocen",
+    x = "ocena",
+    y = "frekvenca"
+  ) +
+    scale_x_continuous(breaks = seq(3, 8, 1)) +
+    theme_classic()
+```
+
+Porazdelitev ocen je precej **simetrična**. To pomeni, da so vrednosti enakomerno porazdeljene okoli srednje vrednosti.  Najbolj pogosta ocena je 5, razpršenost podatkov je majhna.
+
+### Kislost vina
+
+Opazno je, da je za spremenljivko `fixed.acidity` (kislost vina) porazdelitev nekoliko asimetrična desno, saj se *rep* porazdelitve rasteza v desno; večina podatkov je skoncentriranih bolj na levi strani.
+
+```{r}
+#| code-fold: true
+#| code-summary: graf
+quality_histogram(df, "fixed.acidity")
+```
+
+To bi lahko pomenilo, da je za to sorto vina preferirana nižja kislost, toda ker porazdelitev ne odstopa zelo od simetrične, tega ne morem trditi zagotovo.
+
+Opazno je, da so ocene tudi podobno porazdeljene. Največ vin ima ocene 5 ali 6. Od vrednosti $\approx 10$ in več je opazno, da imajo vina boljše ocene kot vina z nižjo kislostjo. Verjetno je razlog za to nižje število podatkov za ta vina. Da bi lahko zagotovo trdil ali kislost vpliva na oceno vina, bi moral opraviti dodatne statistične teste.
+
+### Vsebnost sladkorja
+
+Porazdelitev vsebnosti sladkorja je zelo asimetrična v desno. Večina vrednosti je med $0$ in $\approx 5$. 
+
+***To se sklada s podatki ki sem jih dobil na tej speltni strani o tem da mora met vino toliko sladkorja ker to pomeni da je ok al neki, najdi reference***.
+
+```{r}
+#| code-fold: true
+#| code-summary: graf
+quality_histogram(df, "residual.sugar")
+```
+
+To lahko pomeni, da višja koncentracija sladkorja v tej sorti vina ni pogosta. Največ ocen se ponovno pojavi med 5 ali 6, zato ne morem trditi, da vsebnost sladkorja veliko vpliva na oceno vina.
+
+### Celotna vsebnost žveplovega dioksida
+
+Spremenljivka celotne vsebnosti žveplovega dioksida je prav tako v desno asimetrično porazdeljena, ocene prav tako. Ni razvidne korelacije med oceno vina in celotne vsebnosti žveplovega dioksida.
+
+```{r}
+#| code-fold: true
+#| code-summary: graf
+quality_histogram(df, "total.sulfur.dioxide")
+```
+
+Za asimetrijo je morda kriva prisotnost osamelcev, kot je opazno na skrajnem desnem robu.
+
+```{r}
+filter(df, total.sulfur.dioxide > 160) |> nrow()
+```
+
+# Naloga 2.
+
+***Izpišite kvartile in standardni odklon za spremenljivko “kislost” ter narišite okvir z ročaji. Enako naredite še za spremenljivki “sladkor” in “celoten žveplov dioksid”. Interpetirajte rezultate.***
+
+### Opis problema
+
+V drugi se osredotočamo na bolj numerično analizo porazdelitev zgornjih treh spremenljivk - kislost, vsebnost sladkorja in celotna vsebnost žveplovega dioksida, ki nam lahko da bolj podroben vpogled v razpršenost in variabilnost spremenljivk.
+
+### Opis uporabljenih statističnih metod
+
+Iz naloge 1 je razvidno, da so vse tri spremenljivke porazdeljene asimetirčno. Do asimetrije pride, ko podatki niso enakomerno porazdeljeni okoli srednje vrednosti (aritmetične sredine). V tem primeru je primerno podati podatke o mediani, 1. in 3. kvartilu ter o IQR (interkvartilnem razmiku), vendar bom zadnjega izpustil v zameno standardnega odklona, ki prav tako opisuje razpršenost podatkov.
+
+Ustvaril sem si funkcijo `asim_summary`, ki predstavi kvartile (prvi, drugi - mediana, in tretji) ter standardni odklon neke spremenljivke.
 
 ```{r}
 #| code-fold: true
@@ -146,79 +225,53 @@ asim_summary <- function(df, col) {
   unpacked <- unlist(selected)
 
   selected |> summarise(
-    "min" = min(unpacked),
     "1. kvartil" = quantile(unpacked, 0.25),
     "mediana" = median(unpacked),
     "3. kvartil" = quantile(unpacked, 0.75),
-    "IQR" = IQR(unpacked),
-    "max" = max(unpacked),
-  ) |> 
-  knitr::kable()
-}
-```
-
-```{r}
-#| code-fold: true
-#| code-summary: sim_summary
-sim_summary <- function(df, col) {
-  selected <- select(df, all_of(col))
-  unpacked <- unlist(selected)
-
-  selected |> summarise(
-    "modus" = names(which.max(table(factor(unpacked)))),
-    "aritmetična sredina" = mean(unlist(unpacked)),
-    "standardni odklon" = sd(unlist(unpacked)),
+    "standardni odklon" = sd(unpacked),
   ) |> 
     knitr::kable()
 }
 ```
 
-Za vsako spremenljivko sem podal tudi ustrezne mere centralne tendence, primerne za tip porazdelitve (bodisi simetrična ali asimetrična).
+Pri predstavitvi porazdelitve spremenljivk so primerni tudi box-plots ali *škatle z brki* iz katerih je razvidna mediana, 1. in 3. kvartil ter najmanjša in največja vrednost spremenljivke. V ta namen sem si ustvaril še `my_boxplot` funkcijo, ki izriše škatlo z brki za dano spremenljivko.
+
+```{r}
+#| code-fold: true
+#| code-summary: my_boxplot
+my_boxplot <- function(df, col) {
+  selected <- select(df, all_of(col))
+  unpacked <- unlist(selected)
+  col_name = gsub(pattern = "\\.", replacement = " ", x = col)
+
+  plot <- ggplot(selected, aes(x = unpacked)) +
+    geom_boxplot() +
+    labs(
+      title = paste("Škatla z brki za spremenljivko", col_name),
+      y = col_name,
+      x = ""
+    ) +
+    theme_classic()
+
+  return(plot)
+}
+```
 
 ## Rezultati in njihova interpretacija
 
-### Porazdelitev ocen vina
-
-```{r}
-#| code-fold: true
-#| code-summary: graf
-ggplot(df, aes(x = quality)) +
-  geom_bar() +
-  labs(
-    title = "Porazdelitev ocen",
-    x = "ocena",
-    y = "frekvenca"
-  ) + 
-    theme_classic()
-```
-
-Porazdelitev ocen je precej **simetrična**, kar pomeni, da ni (veliko) osamelcev. Zaradi tega je primerno podati *mere centralne tendence* - artimetična sredina, modus in standardni odklon.
-
-```{r}
-sim_summary(df, "quality")
-```
-
-Najbolj pogosta ocena je 5, razpršenost podatkov pa je tudi precej majhna.
-
 ### Kislost vina
 
-Opazno je, da je za spremenljivko `fixed.acidity` (kislost vina) porazdelitev nekoliko asimetrična desno.
+Povprečna kislost se giblje med 7 in 9. Standardni odklon ni precej velik glede na razpon podatkov, a težko ocenim, zaradi asimetrične porazdelitve spremenljivke. 
 
 ```{r}
 #| code-fold: true
-#| code-summary: graf
-quality_histogram(df, "fixed.acidity")
-```
-
-Zaradi asimetrične porazdelitve so primerne statistične mere *mere variabilnosti* - mediana, interkvartilni razmik ter prvi in tretji kvartil, saj so bolj robustne in neobčutljive na osamelce, ki so razlog za asimetrične porazdelitve.
-
-```{r}
+#| code-summary: kvartili in standardni kislosti vina
 asim_summary(df, "fixed.acidity")
 ```
 
 Opazno je, da se z večjo oceno poveča tudi mediana, kar lahko implicira na korelacijo med oceno in kislostjo vina. ***dodaj nek reference kako je kislost pomebna za kakovost vina***.
 
-Iz spodnje tabele je opazno, da je ocene vin precej enakomerno porazdeljene. Višje ocene so malo bolj pogoste, kar lahko pomeni, da so proizvajalci imeli dobro letino. 
+Iz spodnje tabele je opazno, da so ocene vin precej enakomerno porazdeljene. Višje ocene so malo bolj pogoste, kar lahko pomeni, da so proizvajalci imeli dobro letino.
 
 ```{r}
 #| code-fold: true
@@ -238,26 +291,20 @@ select(df, quality, fixed.acidity) |>
 Visoki IQR vrednosti za oceni 3 in 8 lahko pojasne majhna količina podatkov za ti oceni, 10 in 18 opažanj, kar je malo v primerjavi z ostalimi.
 
 ```{r}
-quality_factor |> summary()
+factor(df$quality) |> summary()
 ```
 
 ### Vsebnost sladkorja
 
-Porazdelitev vsebnosti sladkorja je zelo asimetrična v desno. Večina vrednosti je med 0 in približno 5. ***To se sklada s podatki ki sem jih dobil na tej speltni strani o tem da mora met vino toliko sladkorja ker to pomeni da je ok al neki, najdi reference***.
+Vrednosti so veliko bolj skoncentrirane okoli 2, kar lahko pomeni, da je to pričakovana vsebnost sladkorja te sorte vina.
 
 ```{r}
 #| code-fold: true
-#| code-summary: graf
-quality_histogram(df, "residual.sugar")
-```
-
-Tu so predstavljene mere variabilnosti za dano spremenljivko. Iz IQR vrednosti je res razvidno, da je večina podatkov skoncentriranih med 1. in 3. kvartilom, torej med $\approx 2$ in $2.5$.
-
-```{r}
+#| code-summary: kvartili in standardni odklon vsebnosti sladkorja
 asim_summary(df, "residual.sugar")
 ```
 
-To lahko pomeni, da višja koncentracija sladkorja v vinu ni pogosta, saj popači njegov okus. Glede na spodnjo tabelo je razvidno, da so ocene ponovno simetrično porazdeljene, vse z mediano približno $2.2$. Velika IQR vrednost za oceno 3 pa je verjetno spet odvisna od majhne količine podatkov z oceno 3.
+Glede na spodnjo tabelo je razvidno, da so ocene ponovno simetrično porazdeljene, vse z mediano približno $2.2$. Velika IQR vrednost za oceno 3 pa je verjetno spet odvisna od majhne količine podatkov z oceno 3.
 
 ```{r}
 #| code-fold: true
@@ -276,17 +323,11 @@ select(df, quality, residual.sugar) |>
 
 ### Celotna vsebnost žveplovega dioksida
 
-Spremenljivka celotne vsebnosti žveplovega dioksida je prav tako v desno asimetrično porazdeljena.
+Na porazdelitev spremenljivke veliko vplivajo osamelci v podatkih, zaradi česar je vrednost standardnega odklona precej velika glede na razpon podatkov. Povprečna vrednost se giblje med 22 do 62, zato lahko sklepam, da vsebnost žveplovega dioksida ni tako odvisna od sorte vina, kot od postopka pridelave.
 
 ```{r}
 #| code-fold: true
-#| code-summary: graf
-quality_histogram(df, "total.sulfur.dioxide")
-```
-
-Zaradi tega bom predstavil njene mere variabilnosti.
-
-```{r}
+#| code-summary: kvartili in standardni odklon celotne vsebnosti žveplovega dioksida
 asim_summary(df, "total.sulfur.dioxide")
 ```
 
@@ -311,20 +352,48 @@ select(df, quality, total.sulfur.dioxide) |>
 
 Ocene so ponovno precej enakomerno porazdeljene glede na vrednosti spremenljivke. Malo več jih je skoncentriranih okoli srednjih vrednosti za oceno, 5 in 6, kar je razvidno iz mediane in IQR.
 
-***Morda so ugotovili optimalno vsebovanost žveplovega dioksida***
+# Škatle z brki
 
-# Naloga 2.
+Tu so predstavljene še škatle z brki za vse tri spremenljivke, ki poudarijo vse zatrjeno o njiovih porazdelitvah.
 
-**Izpišite kvartile in standardni odklon za spremenljivko “kislost” ter narišite okvir z ročaji. Enako naredite še za spremenljivki “sladkor” in “celoten žveplov dioksid”. Interpetirajte rezultate.**
+```{r, fig.width=12, fig.height=8}
+#| cache: true
+#| column: page
+#| code-fold: true
+#| code-summary: škatle z brki
+p1 <- my_boxplot(df, "fixed.acidity")
+p2 <- my_boxplot(df, "residual.sugar")
+p3 <- my_boxplot(df, "total.sulfur.dioxide")
+
+grid.arrange(p1, p2, p3, nrow = 3)
+```
 
 # Naloga 3.
 
-**Zanima nas, ali je povprečna kislost vin, ki so dobila oceno 5, višja kot povprečne kislosti vin z oceno 6. Katerega od statističnih testov bi uporabili in kakšen je vaš zaključek? Z ustreznim statističnim testom preverite še hipotezo, da je povprečna vsebnost sladkorja vseh izbranih vin večja od 2,3. Interpretirajte rezultate.**
+***Zanima nas, ali je povprečna kislost vin, ki so dobila oceno 5, višja kot povprečne kislosti vin z oceno 6. Katerega od statističnih testov bi uporabili in kakšen je vaš zaključek? Z ustreznim statističnim testom preverite še hipotezo, da je povprečna vsebnost sladkorja vseh izbranih vin večja od 2,3. Interpretirajte rezultate.***
+
+## Opis problema
+
+## Uporabljene statistične metode
 
 # Naloga 4.
 
-**Za vsako od dvanajstih zgoraj omenjenih spremenljivk preverite, ali so podatki skladni z normalno porazdelitvijo. Če da, podajte parametre teh porazdelitev.**
+***Za vsako od dvanajstih zgoraj omenjenih spremenljivk preverite, ali so podatki skladni z normalno porazdelitvijo. Če da, podajte parametre teh porazdelitev.***
+
+## Opis problema
+
+## Uporabljene statistične metode
+
+Porazdelitev spremenljivk lahko primerjamo z normalno z uporabo funkcije `qqplot`.
+
+## Aproksimiranje porazdelitev spremenljivk z normalno porazdelitvijo
+
+***Naredi facet wrap qqnorm ali qqplots, verjetno mora met ggplot nekaj, drugače ustvari svoje. At last, če ne bo nič, samo naredi normalne plots in daj v grid.***
 
 # Naloga 5.
 
-**Po lastni izbiri postavite vsaj še eno raziskovalno vprašanje in nanj natančno odgovorite.**
+***Po lastni izbiri postavite vsaj še eno raziskovalno vprašanje in nanj natančno odgovorite.***
+
+## Opis problema
+
+## Uporabljene statistične metode

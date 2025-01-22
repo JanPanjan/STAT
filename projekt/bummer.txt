@@ -1,0 +1,38 @@
+naloga 2
+
+Prav tako sem ustvaril tri funckije, s katerimi bom predstavil mere centralne tendence ali mere variabilnosti neke spremenljivke glede na njeno simetrično ali asimetrično porazdelitev.
+
+{r}
+#| code-fold: true
+#| code-summary: asim_summary
+asim_summary <- function(df, col) {
+  selected <- select(df, all_of(col))
+  unpacked <- unlist(selected)
+
+  selected |> summarise(
+    "min" = min(unpacked),
+    "1. kvartil" = quantile(unpacked, 0.25),
+    "mediana" = median(unpacked),
+    "3. kvartil" = quantile(unpacked, 0.75),
+    "IQR" = IQR(unpacked),
+    "max" = max(unpacked),
+  ) |> 
+  knitr::kable()
+}
+
+{r}
+#| code-fold: true
+#| code-summary: sim_summary
+sim_summary <- function(df, col) {
+  selected <- select(df, all_of(col))
+  unpacked <- unlist(selected)
+
+  selected |> summarise(
+    "modus" = names(which.max(table(factor(unpacked)))),
+    "aritmetična sredina" = mean(unlist(unpacked)),
+    "standardni odklon" = sd(unlist(unpacked)),
+  ) |> 
+    knitr::kable()
+}
+
+Za vsako spremenljivko sem podal tudi ustrezne mere centralne tendence, primerne za tip porazdelitve (bodisi simetrična ali asimetrična).
