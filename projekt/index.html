@@ -151,6 +151,7 @@ window.Quarto = {
   <li><a href="#opis-problema-3" id="toc-opis-problema-3" class="nav-link" data-scroll-target="#opis-problema-3">Opis problema</a></li>
   <li><a href="#uporabljene-statistične-metode-1" id="toc-uporabljene-statistične-metode-1" class="nav-link" data-scroll-target="#uporabljene-statistične-metode-1">Uporabljene statistične metode</a></li>
   <li><a href="#aproksimiranje-porazdelitev-spremenljivk-z-normalno-porazdelitvijo" id="toc-aproksimiranje-porazdelitev-spremenljivk-z-normalno-porazdelitvijo" class="nav-link" data-scroll-target="#aproksimiranje-porazdelitev-spremenljivk-z-normalno-porazdelitvijo">Aproksimiranje porazdelitev spremenljivk z normalno porazdelitvijo</a></li>
+  <li><a href="#rezultati-in-njihova-interpretacija-2" id="toc-rezultati-in-njihova-interpretacija-2" class="nav-link" data-scroll-target="#rezultati-in-njihova-interpretacija-2">Rezultati in njihova interpretacija</a></li>
   </ul></li>
   <li><a href="#naloga-5." id="toc-naloga-5." class="nav-link" data-scroll-target="#naloga-5.">Naloga 5.</a>
   <ul class="collapse">
@@ -203,11 +204,13 @@ window.Quarto = {
 <h1>Podatki</h1>
 <section id="uporabljeni-paketi" class="level2">
 <h2 class="anchored" data-anchor-id="uporabljeni-paketi">Uporabljeni paketi</h2>
-<p>Za delo s podatki sem uporabljal paket <code>dplyr</code>, ki je ustvarjen za delo s podatkovnimi okvirji ter <code>ggplot2</code> in <code>gridExtra</code> za kvalitetne vizualne predstavitve <em>distiliranih</em> podatkov.</p>
+<p>Za delo s podatki sem uporabljal pakete <code>tidyr</code>, <code>purr</code> za čiščenje in preoblikovanje podatkov, <code>dplyr</code>, ki je ustvarjen za delo s podatkovnimi okvirji ter <code>ggplot2</code> in <code>gridExtra</code> za kvalitetne vizualne predstavitve <em>distiliranih</em> podatkov.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="branje-podatkov" class="level2">
@@ -602,21 +605,22 @@ window.Quarto = {
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(df)</span>
 <span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  bins_ocena <span class="ot">&lt;-</span> <span class="fu">floor</span>(<span class="dv">1</span> <span class="sc">+</span> <span class="fu">log2</span>(n))</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  quality_factor <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">unlist</span>(<span class="fu">select</span>(df, quality)))</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  unpacked <span class="ot">&lt;-</span> <span class="fu">unlist</span>(<span class="fu">select</span>(df, col))</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  col_name <span class="ot">=</span> <span class="fu">gsub</span>(<span class="at">pattern =</span> <span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, <span class="at">replacement =</span> <span class="st">" "</span>, <span class="at">x =</span> col)</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">unlist</span>(<span class="fu">select</span>(df, <span class="fu">all_of</span>(col))), <span class="at">fill =</span> quality_factor)) <span class="sc">+</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">bins =</span> bins_ocena) <span class="sc">+</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Porazdelitev"</span>, col_name, <span class="st">"glede na oceno"</span>),</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> col_name,</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="st">"frekvenca"</span>,</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">fill =</span> <span class="st">"ocena"</span></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"RdPu"</span>) <span class="sc">+</span></span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme_classic</span>()</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  quality_factor <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">unlist</span>(<span class="fu">select</span>(df, quality)))</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  unpacked <span class="ot">&lt;-</span> <span class="fu">unlist</span>(<span class="fu">select</span>(df, col))</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  col_name <span class="ot">=</span> <span class="fu">gsub</span>(<span class="at">pattern =</span> <span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, <span class="at">replacement =</span> <span class="st">" "</span>, <span class="at">x =</span> col)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">unlist</span>(<span class="fu">select</span>(df, <span class="fu">all_of</span>(col))), <span class="at">fill =</span> quality_factor)) <span class="sc">+</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">bins =</span> bins_ocena) <span class="sc">+</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Porazdelitev"</span>, col_name, <span class="st">"glede na oceno"</span>),</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> col_name,</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> <span class="st">"frekvenca"</span>,</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">fill =</span> <span class="st">"ocena"</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"RdPu"</span>) <span class="sc">+</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme_classic</span>()</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -1117,19 +1121,45 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="uporabljene-statistične-metode">Uporabljene statistične metode</h2>
 </section>
 </section>
-<section id="naloga-4." class="level1">
+<section id="naloga-4." class="level1 page-columns page-full">
 <h1>Naloga 4.</h1>
 <p><strong><em>Za vsako od dvanajstih zgoraj omenjenih spremenljivk preverite, ali so podatki skladni z normalno porazdelitvijo. Če da, podajte parametre teh porazdelitev.</em></strong></p>
 <section id="opis-problema-3" class="level2">
 <h2 class="anchored" data-anchor-id="opis-problema-3">Opis problema</h2>
+<p>Cilj naloge je primerjati porazdelitve 12 spremenljivk z normalno. Normalna porazdelitev je v statistiki zelo pomembna, saj je uporabljena za veliko statističnih testov.</p>
 </section>
 <section id="uporabljene-statistične-metode-1" class="level2">
 <h2 class="anchored" data-anchor-id="uporabljene-statistične-metode-1">Uporabljene statistične metode</h2>
-<p>Porazdelitev spremenljivk lahko primerjamo z normalno z uporabo funkcije <code>qqplot</code>.</p>
+<p>Porazdelitvi lahko primerjamo s histogrami vizualno ali s tako imenovanim <strong>Q-Q (kvantil-kvantil) plot</strong>, ki primerja kvantile naših podatkov s kvantili teoretične normalne porazdelitve. Če se točke na Q-Q grafu ujemajo z diagonalno premico, to nakazuje na to, da so podatki normalno porazdeljeni.</p>
 </section>
-<section id="aproksimiranje-porazdelitev-spremenljivk-z-normalno-porazdelitvijo" class="level2">
+<section id="aproksimiranje-porazdelitev-spremenljivk-z-normalno-porazdelitvijo" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="aproksimiranje-porazdelitev-spremenljivk-z-normalno-porazdelitvijo">Aproksimiranje porazdelitev spremenljivk z normalno porazdelitvijo</h2>
-<p><strong><em>Naredi facet wrap qqnorm ali qqplots, verjetno mora met ggplot nekaj, drugače ustvari svoje. At last, če ne bo nič, samo naredi normalne plots in daj v grid.</em></strong></p>
+<div class="cell page-columns page-full">
+<details class="code-fold">
+<summary>Q-Q plots za vseh 12 spremenljivk</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">|&gt;</span> </span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">everything</span>(), <span class="at">names_to =</span> <span class="st">"spremenljivka"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">sample =</span> value)) <span class="sc">+</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq</span>() <span class="sc">+</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_qq_line</span>() <span class="sc">+</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> spremenljivka, <span class="at">scales =</span> <span class="st">"free"</span>) <span class="sc">+</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Q-Q plots za vseh 12 spremenljivk"</span>,</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"kvantili normalne porazdelitve"</span>,</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"kvantili spremenljivke"</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display page-columns page-full">
+<div class="page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><img src="index_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img column-page" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="rezultati-in-njihova-interpretacija-2" class="level2">
+<h2 class="anchored" data-anchor-id="rezultati-in-njihova-interpretacija-2">Rezultati in njihova interpretacija</h2>
 </section>
 </section>
 <section id="naloga-5." class="level1">

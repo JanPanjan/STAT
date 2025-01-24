@@ -23,10 +23,12 @@ V tem poročilu so predstavljene statistične analize podatkov kakovosti rdečeg
 
 ## Uporabljeni paketi
 
-Za delo s podatki sem uporabljal paket `dplyr`, ki je ustvarjen za delo s podatkovnimi okvirji ter `ggplot2` in `gridExtra` za kvalitetne vizualne predstavitve *distiliranih* podatkov.
+Za delo s podatki sem uporabljal pakete `tidyr`, `purr` za čiščenje in preoblikovanje podatkov, `dplyr`, ki je ustvarjen za delo s podatkovnimi okvirji ter `ggplot2` in `gridExtra` za kvalitetne vizualne predstavitve *distiliranih* podatkov.
 
 ```{r}
 #| output: false
+library(tidyr)
+library(purrr)
 library(dplyr)
 library(ggplot2)
 library(gridExtra)
@@ -382,13 +384,32 @@ grid.arrange(p1, p2, p3, nrow = 3)
 
 ## Opis problema
 
+Cilj naloge je primerjati porazdelitve 12 spremenljivk z normalno. Normalna porazdelitev je v statistiki zelo pomembna, saj je uporabljena za veliko statističnih testov. 
+
 ## Uporabljene statistične metode
 
-Porazdelitev spremenljivk lahko primerjamo z normalno z uporabo funkcije `qqplot`.
+Porazdelitvi lahko primerjamo s histogrami vizualno ali s tako imenovanim **Q-Q (kvantil-kvantil) plot**, ki primerja kvantile naših podatkov s kvantili teoretične normalne porazdelitve. Če se točke na Q-Q grafu ujemajo z diagonalno premico, to nakazuje na to, da so podatki normalno porazdeljeni.
 
 ## Aproksimiranje porazdelitev spremenljivk z normalno porazdelitvijo
 
-***Naredi facet wrap qqnorm ali qqplots, verjetno mora met ggplot nekaj, drugače ustvari svoje. At last, če ne bo nič, samo naredi normalne plots in daj v grid.***
+```{r, fig.width=12, fig.height=10}
+#| cache: true
+#| column: page
+#| code-fold: true
+#| code-summary: Q-Q plots za vseh 12 spremenljivk
+df |> 
+  pivot_longer(cols = everything(), names_to = "spremenljivka") |> 
+  ggplot(aes(sample = value)) +
+  stat_qq() +
+  stat_qq_line() +
+  facet_wrap(~ spremenljivka, scales = "free") +
+  labs(
+    title = "Q-Q plots za vseh 12 spremenljivk",
+    x = "kvantili normalne porazdelitve",
+    y = "kvantili spremenljivke"
+  )
+```
+## Rezultati in njihova interpretacija
 
 # Naloga 5.
 
